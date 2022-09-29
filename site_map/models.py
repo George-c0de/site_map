@@ -113,7 +113,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     card = models.OneToOneField(Coords, on_delete=models.CASCADE, null=True, blank=True)
     photo = models.OneToOneField(Image, on_delete=models.CASCADE, null=True, blank=True)
-    patronymic = models.CharField('Отчество', max_length=150, null=True, blank=True)
+    patronymic = models.CharField('Отчество', max_length=150, blank=True)
 
     class Meta:
         verbose_name_plural = _("Пользователь")
