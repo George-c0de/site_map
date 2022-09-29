@@ -3,10 +3,5 @@
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (project)" project-jdk-type="Python SDK" />
-  <component name="SshConsoleOptionsProvider">
-    <option name="myEncoding" value="UTF-8" />
-    <option name="myConnectionType" value="NONE" />
-    <option name="myConnectionId" value="" />
-  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (site_map)" project-jdk-type="Python SDK" />
 </project>
