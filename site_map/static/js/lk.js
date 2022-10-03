@@ -1,8 +1,8 @@
-var ok = false
+let ok = false;
 ymaps.ready(init);
 
 function init() {
-    var myPlacemark,
+    let myPlacemark,
         myMap;
     $('#toggle').bind({
         click: function () {
@@ -88,7 +88,6 @@ function init() {
                             // В качестве контента балуна задаем строку с адресом объекта.
                             balloonContent: firstGeoObject.getAddressLine()
                         });
-                    console.log(myPlacemark.properties.get('balloonContent'));
                     document.getElementById('map_address').value = myPlacemark.properties.get('balloonContent');
                 });
             }

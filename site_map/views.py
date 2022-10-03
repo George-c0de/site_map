@@ -1,24 +1,12 @@
-import os
-import time
-import json
 from decimal import Decimal
-from time import sleep
 from sendsay.api import SendsayAPI
-from django.shortcuts import render
-from django.contrib.auth.models import User
-from django.db.models import Q
-from django.http import HttpResponseRedirect, HttpResponseNotFound
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.views.generic import ListView
-from django.contrib.auth import models
-import random
 import json
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from project.settings import BASE_DIR, STATIC_URL, MEDIA_ROOT
+from project.settings import env
 from .forms import *
 from .models import *
 
@@ -68,18 +56,24 @@ def save_or_change_image(image, user):
 
 
 def change_first_name(user, name):
+    if user.first_name == name:
+        return ''
     user.first_name = name
     user.save()
     return user.first_name
 
 
 def change_last_name(user, name):
+    if user.last_name == name:
+        return ''
     user.last_name = name
     user.save()
     return user.last_name
 
 
 def change_patronymic(user, name):
+    if user.patronymic == name:
+        return ''
     user.patronymic = name
     user.save()
     return user.patronymic
@@ -149,6 +143,7 @@ def get_coords_and_profile(request):
         profile = Profile.objects.get(card=el)
         user = profile.user
         point = {
+            "id": i,
             "type": "Feature",
             "geometry": {
                 "type": "Point",
@@ -159,7 +154,6 @@ def get_coords_and_profile(request):
                 }
             }
         }
-        point['id'] = i
         pattern_point_properties = {
             "balloonContent": f"{profile.card.name.split(',')[1][1:]}",
             "clusterCaption": f"{profile.card.name.split(',')[1][1:]}"
@@ -172,18 +166,17 @@ def get_coords_and_profile(request):
             image = profile.photo.image.url
         else:
             image = ''
+        image_html = f'<img alt="картинка" src="{image}" height="150" width="200" class="scale">'
+        fio_html = f'<b>ФИО: </b>{user.last_name} {user.first_name} {profile.patronymic}'
+        email_html = f'<b>Email: </b>{user.email}'
         pattern_point_properties[
-            'balloonContentBody'] = f'<img alt="картинка" src="{image}" height="150" width="200" class="scale"> <br/> <b>Email:</b><br/><p>{user.email}<br/><b>ФИО</b><br/> Имя:{user.first_name}<br>Фамилия:{user.last_name}<br>Отчество: {profile.patronymic}<br>Адрес: {profile.card.name}</p>'
-        pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Рога и копыта"'
+            'balloonContentBody'] = f'{image_html} <br/> {email_html}<br/>{fio_html}<b>Адрес: </b>{profile.card.name}'
+        pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Ваша организация"'
         pattern_point_properties[
             'hintContent'] = f'<img alt="картинка" src="{image}" height="100" width="100" >'
         point['properties'] = pattern_point_properties
         result_end['features'].append(point)
         i += 1
-        for el1 in result_end['features']:
-            print(el1)
-    for el in result_end['features']:
-        print(el)
     return Response(data=result_end)
 
 
@@ -241,14 +234,20 @@ def home_page(request):
 
 
 @api_view(['GET'])
-def send_message(request, password=123, email='tering123@yandex.ru'):
-    api = SendsayAPI(login='x_1663938921994862', password='E-;K9(4#/Z')
+def send_message(
+        request,
+        password=env('SENDSAY_PASSWORD'),
+        login_sendsay=env('SENDSAY_LOGIN'),
+        email='tering123@yandex.ru',
+        email_sender=env('SENDSAY_EMAIL')
+):
+    api = SendsayAPI(login=login_sendsay, password=password)
     response = api.request('issue.send', {
         'sendwhen': 'now',
         'letter': {
             'subject': "Subject",
             'from.name': "Tester",
-            'from.email': "rodionlxlnest@gmail.com",
+            'from.email': f"{email_sender}",
             'message': {
                 'html': "Sendsay API client test message<hr>Hello!"
             }
@@ -277,24 +276,30 @@ def register_page(request):
             form = CreateUserForm(register_user)
             if form.is_valid():
                 form.save()
-                user = User.objects.get(username=request.POST.get('email'))
-                coords_profile = save_change_map(user, request.POST.get('map_coords'), request.POST.get('map_address'))
-                temp_image = request.FILES.get('image')
-                image = Image.objects.create(image=temp_image)
-                patronymic = request.POST.get('patronymic')
-                profile_data = {
-                    'user': user,
-                    'patronymic': patronymic,
-                    'card': coords_profile,
-                    'photo': image
-                }
-                form_profile = CreateProfileForm(profile_data)
-                if form_profile.is_valid():
-                    form_profile.save()
-                else:
-                    delete_all(user, coords_profile, image)
-                messages.success(request, 'Аккаунт создан,' + user.username)
-                return redirect('login')
+                user, image, profile = None, None, None
+                try:
+                    user = User.objects.get(username=request.POST.get('email'))
+                    temp_image = request.FILES.get('image')
+                    image = Image.objects.create(image=temp_image)
+                    patronymic = request.POST.get('patronymic')
+                    profile_data = {
+                        'user': user,
+                        'patronymic': patronymic,
+                        'card': None,
+                        'photo': image
+                    }
+                    form_profile = CreateProfileForm(profile_data)
+                    if form_profile.is_valid():
+                        form_profile.save()
+                        profile = Profile.objects.get(user_id=user.id)
+                        save_change_map(profile, request.POST.get('map_coords'), request.POST.get('map_address'))
+                    else:
+                        delete_all(user, image)
+                    messages.success(request, 'Аккаунт создан,' + user.username)
+                    return redirect('login')
+                except BaseException as e:
+                    print(e)
+                    delete_all(user, image, profile)
             else:
                 messages.error(request, 'Ошибка при создании аккаунта')
                 return render(request, 'site_map/register.html')
