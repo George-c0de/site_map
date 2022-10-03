@@ -10,5 +10,6 @@ urlpatterns = [
       path('', views.home_page, name='home'),
       path('get_coords_and_profile', views.get_coords_and_profile),
       path('lk', views.lk, name='lk'),
-      path('send', views.send_message)
+      path('send', views.send_message),
+      path('get_filter', views.get_filter)
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

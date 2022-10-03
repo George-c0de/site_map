@@ -26,7 +26,7 @@ CustomSearchProvider.prototype.geocode = function (request, options) {
     // Ищем в свойстве text каждого элемента массива.
     for (var i = 0, l = this.points.length; i < l; i++) {
         var point = this.points[i];
-        if (point.text.toLowerCase().indexOf(request.toLowerCase()) != -1) {
+        if (point.text.toLowerCase().indexOf(request.toLowerCase()) !== -1) {
             points.push(point);
         }
     }
@@ -86,83 +86,73 @@ function init() {
             controls: []
         }, {
             searchControlProvider: 'yandex#search'
-        }),
-        objectManager = new ymaps.ObjectManager({
-            // Чтобы метки начали кластеризоваться, выставляем опцию.
-            clusterize: true,
-            // ObjectManager принимает те же опции, что и кластеризатор.
-            gridSize: 64,
-            // Макет метки кластера pieChart.
-            clusterIconLayout: "default#pieChart"
         });
-    myMap.geoObjects.add(objectManager);
-    var listBoxItems = ['Школа', 'Аптека', 'Магазин', 'Больница', 'Бар']
-            .map(function (title) {
-                return new ymaps.control.ListBoxItem({
-                    data: {
-                        content: title
-                    },
-                    state: {
-                        selected: true
-                    }
-                })
-            }),
-        reducer = function (filters, filter) {
-            filters[filter.data.get('content')] = filter.isSelected();
-            return filters;
-        },
-        // Теперь создадим список, содержащий 5 пунктов.
-        listBoxControl = new ymaps.control.ListBox({
-            data: {
-                content: 'Фильтр',
-                title: 'Фильтр'
-            },
-            items: listBoxItems,
-            state: {
-                // Признак, развернут ли список.
-                expanded: true,
-                filters: listBoxItems.reduce(reducer, {})
-            }
-        });
-    myMap.controls.add(listBoxControl);
-    listBoxControl.events.add(['select', 'deselect'], function (e) {
-        var listBoxItem = e.get('target');
-        var filters = ymaps.util.extend({}, listBoxControl.state.get('filters'));
-        filters[listBoxItem.data.get('content')] = listBoxItem.isSelected();
-        listBoxControl.state.set('filters', filters);
+
+    $.ajax({
+        url: "/get_coords_and_profile"
+    }).done(function (data) {
+        objectManager.add(data);
     });
-
-    var filterMonitor = new ymaps.Monitor(listBoxControl.state);
-    filterMonitor.add('filters', function (filters) {
-        // Применим фильтр.
-        objectManager.setFilter(getFilterFunction(filters));
-    });
-
-    function getFilterFunction(categories) {
-        return function (obj) {
-            var content = obj.properties.balloonContent;
-            return categories[content]
-        }
-    }
-
     let myPoints = []
     for (let i = 0; i < x.length; i += 1) {
         let new_point = new ymaps.Placemark([x[i], y[i]], {
             balloonContentHeader: address[i] + '<br>',
             // Зададим содержимое основной части балуна.
-            balloonContentBody: '<img src="' + image[i] + '" height="150" width="200" class="scale"> <br/> ' +
+            balloonContentBody: '<img alt="картинка" src="' + image[i] + '" height="150" width="200" class="scale"> <br/> ' +
                 '<b>Email:</b><br/><p>' + email[i] +
                 '<br/><b>ФИО</b><br/> Имя: ' + first_name[i] + '<br>Фамилия:' + last_name[i] + '<br>Отчество: ' + patronymic[i] + '<br>Адрес: ' + address[i] + '</p>',
             // Зададим содержимое нижней части балуна.
             balloonContentFooter: 'Информация предоставлена:<br/>OOO "Рога и копыта"',
             // Зададим содержимое всплывающей подсказки.
-            hintContent: '<img src="' + image + '" height="100" width="100" >',
+            hintContent: '<img alt="картинка" src="' + image + '" height="100" width="100" >',
             balloonContent: 'Школа',
             clusterCaption: 'Школа',
-
         })
+
+        function checkState() {
+            var shownObjects,
+                byColor = new ymaps.GeoQueryResult(),
+                byShape = new ymaps.GeoQueryResult();
+
+            // Отберем объекты по цвету.
+            if ($('#red').prop('checked')) {
+                // Будем искать по двум параметрам:
+                // - для точечных объектов по полю preset;
+                // - для контурных объектов по цвету заливки.
+                byColor = myObjects.search('options.fillColor = "#ff1000"')
+                    .add(myObjects.search('options.preset = "islands#redIcon"'));
+            }
+            if ($('#green').prop('checked')) {
+                byColor = myObjects.search('options.fillColor = "#00ff00"')
+                    .add(myObjects.search('options.preset = "islands#greenIcon"'))
+                    // После того, как мы нашли все зеленые объекты, добавим к ним
+                    // объекты, найденные на предыдущей итерации.
+                    .add(byColor);
+            }
+            if ($('#yellow').prop('checked')) {
+                byColor = myObjects.search('options.fillColor = "#ffcc00"')
+                    .add(myObjects.search('options.preset = "islands#yellowIcon"'))
+                    .add(byColor);
+            }
+            // Отберем объекты по форме.
+            if ($('#point').prop('checked')) {
+                byShape = myObjects.search('geometry.type = "Point"');
+            }
+            if ($('#polygon').prop('checked')) {
+                byShape = myObjects.search('geometry.type = "Polygon"').add(byShape);
+            }
+            if ($('#circle').prop('checked')) {
+                byShape = myObjects.search('geometry.type = "Circle"').add(byShape);
+            }
+
+            // Мы отобрали объекты по цвету и по форме. Покажем на карте объекты,
+            // которые совмещают нужные признаки.
+            shownObjects = byColor.intersect(byShape).addToMap(myMap);
+            // Объекты, которые не попали в выборку, нужно убрать с карты.
+            myObjects.remove(shownObjects).removeFromMap(myMap);
+        }
+
         myCollection.add(new_point);
-        objectManager.add(new_point);
         let temp_text = address[i] + email[i];
         if (first_name[i] !== 'Не указано') {
             temp_text = temp_text + first_name[i]
@@ -173,7 +163,6 @@ function init() {
         if (patronymic[i] !== 'Не указано') {
             temp_text = temp_text + patronymic[i]
         }
-
         var point = {
             coords: [x[i], y[i]],
             text: temp_text,

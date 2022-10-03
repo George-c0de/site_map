@@ -1,5 +1,6 @@
 import os
 import time
+import json
 from decimal import Decimal
 from time import sleep
 from sendsay.api import SendsayAPI
@@ -29,15 +30,12 @@ def login_page(request):
         if request.method == 'POST':
             username = request.POST.get('username')
             password = request.POST.get('password')
-
             user = authenticate(request, username=username, password=password)
-
             if user is not None:
                 login(request, user)
                 return redirect('home')
             else:
                 messages.info(request, 'имя пользователя и пароль неверный.')
-
         context = {}
         return render(request, 'site_map/login.html', context)
 
@@ -87,10 +85,6 @@ def change_patronymic(user, name):
     return user.patronymic
 
 
-def create_profile(data):
-    pass
-
-
 def delete_all(*args):
     for el in args:
         if el is not None:
@@ -123,53 +117,74 @@ def save_change_map(user, coords, name):
     return coords_profile
 
 
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        # 👇️ if passed in object is instance of Decimal
+        # convert it to a string
+        if isinstance(obj, Decimal):
+            return str(obj)
+        # 👇️ otherwise use the default behavior
+        return json.JSONEncoder.default(self, obj)
+
+
+@api_view(['GET'])
+def get_filter(request):
+    coords = Coords.objects.all()
+    result_end = []
+    for el in coords:
+        if el.name.split(',')[1][1:] not in result_end:
+            result_end.append(el.name.split(',')[1][1:])
+    return Response(data=result_end)
+
+
 @api_view(['GET'])
 def get_coords_and_profile(request):
     coords = Coords.objects.all()
-    result_x = ''
-    result_y = ''
-    result_names = ''
-    first_name = []
-    email = []
-    last_name = []
-    patronymic = []
-    image = []
-    address = []
-    for el in coords:
-        profile = Profile.objects.get()
-        user = profile.user
-        email.append(user.email)
-        address.append(profile.card.name)
-        image.append(profile.photo.image.url)
-        if user.first_name is None or user.first_name == '':
-            first_name.append('Не указано')
-        else:
-            first_name.append(user.first_name)
-        if user.last_name is None or user.last_name == '':
-            last_name.append('Не указано')
-        else:
-            last_name.append(user.last_name)
-        if profile.patronymic is None or profile.patronymic == '':
-            patronymic.append('Не указано')
-        else:
-            patronymic.append(profile.patronymic)
-        result_x += str(el.coords_x) + ','
-        result_y += str(el.coords_y) + ','
-        result_names += str(el.name) + '/'
-    result_x = result_x[:-1]
-    result_y = result_y[:-1]
-    context = {
-        'x': result_x,
-        'y': result_y,
-        'first_name': first_name,
-        'email': email,
-        'last_name': last_name,
-        'patronymic': patronymic,
-        'image': image,
-        'address': address,
+    result_end = {
+        'type': 'FeatureCollection',
+        'features': []
     }
-    # time.sleep(3000)
-    return Response(data=context)
+    i = 0
+    for el in coords:
+        profile = Profile.objects.get(card=el)
+        user = profile.user
+        point = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "options": {
+                    "preset": {
+                        "islands#yellowCircleDotIconWithCaption",
+                    }
+                }
+            }
+        }
+        point['id'] = i
+        pattern_point_properties = {
+            "balloonContent": f"{profile.card.name.split(',')[1][1:]}",
+            "clusterCaption": f"{profile.card.name.split(',')[1][1:]}"
+        }
+        x = json.dumps(el.coords_x, cls=DecimalEncoder)[1:-2]
+        y = json.dumps(el.coords_y, cls=DecimalEncoder)[1:-2]
+        point['geometry']['coordinates'] = [x, y]
+        pattern_point_properties['balloonContentHeader'] = f'{profile.card.name} <br>'
+        if profile.photo.image.name != '':
+            image = profile.photo.image.url
+        else:
+            image = ''
+        pattern_point_properties[
+            'balloonContentBody'] = f'<img alt="картинка" src="{image}" height="150" width="200" class="scale"> <br/> <b>Email:</b><br/><p>{user.email}<br/><b>ФИО</b><br/> Имя:{user.first_name}<br>Фамилия:{user.last_name}<br>Отчество: {profile.patronymic}<br>Адрес: {profile.card.name}</p>'
+        pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Рога и копыта"'
+        pattern_point_properties[
+            'hintContent'] = f'<img alt="картинка" src="{image}" height="100" width="100" >'
+        point['properties'] = pattern_point_properties
+        result_end['features'].append(point)
+        i += 1
+        for el1 in result_end['features']:
+            print(el1)
+    for el in result_end['features']:
+        print(el)
+    return Response(data=result_end)
 
 
 def get_message(request, first_name, last_name, patronymic, map_coords, image):
@@ -209,13 +224,15 @@ def lk(request):
                         image=image,
                         patronymic=patronymic)
         context = {
-            'user': profile
+            'user': profile,
+            'auth': request.user.is_authenticated
         }
         return render(request, 'site_map/personal_area.html', context=context)
     else:
         return redirect('login')
 
 
+@api_view(['GET', 'POST'])
 def home_page(request):
     context = {
         'auth': request.user.is_authenticated
@@ -223,6 +240,7 @@ def home_page(request):
     return render(request, 'site_map/home.html', context=context)
 
 
+@api_view(['GET'])
 def send_message(request, password=123, email='tering123@yandex.ru'):
     api = SendsayAPI(login='x_1663938921994862', password='E-;K9(4#/Z')
     response = api.request('issue.send', {
@@ -240,6 +258,8 @@ def send_message(request, password=123, email='tering123@yandex.ru'):
         'group': 'masssending',
     })
 
+    return Response(data=response, status=200)
+
 
 def register_page(request):
     if request.user.is_authenticated:
@@ -254,7 +274,6 @@ def register_page(request):
                 'first_name': request.POST.get('first_name'),
                 'last_name': request.POST.get('last_name'),
             }
-            # print(profile_register)
             form = CreateUserForm(register_user)
             if form.is_valid():
                 form.save()
@@ -272,8 +291,6 @@ def register_page(request):
                 form_profile = CreateProfileForm(profile_data)
                 if form_profile.is_valid():
                     form_profile.save()
-
-
                 else:
                     delete_all(user, coords_profile, image)
                 messages.success(request, 'Аккаунт создан,' + user.username)
