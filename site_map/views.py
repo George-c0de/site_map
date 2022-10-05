@@ -36,8 +36,7 @@ def login_page(request):
                 return redirect('home')
             else:
                 messages.info(request, 'имя пользователя и пароль неверный.')
-        context = {}
-        return render(request, 'site_map/login.html', context)
+        return render(request, 'site_map/login.html')
 
 
 def logout_user(request):
@@ -46,6 +45,11 @@ def logout_user(request):
 
 
 def save_or_change_image(image, user):
+    """
+    :param image: Картинка для обновления/сохранения
+    :param user: Пользователь
+    :return: При успешной смене картинки и ее сохранении: возвращается сама картинка, иначе None
+    """
     if image is not None:
         if user.photo is not None:
             delete_image = Image.objects.get(id=user.photo.id)
@@ -106,6 +110,12 @@ def validate_by_regexp(password, pattern):
 
 
 def password_verification(password):
+    """
+
+    :param password: Новый пароль
+    :return: при успешной смене пароля возвращается сам пароль, иначе None
+    """
+    # Пароль должен иметь не меньше 8 символов, прописные и строчные символы
     pattern = r'^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$'
     if validate_by_regexp(password, pattern):
         return password
@@ -160,6 +170,10 @@ class DecimalEncoder(json.JSONEncoder):
 
 @api_view(['GET'])
 def get_filter(request):
+    """
+    :param request:
+    :return: Возвращает список для фильтрации данных на карте(По населенному пункту)
+    """
     coords = Coords.objects.all()
     result_end = []
     for el in coords:
@@ -179,6 +193,7 @@ def get_coords_and_profile(request):
     for el in coords:
         profile = Profile.objects.get(card=el)
         user = profile.user
+        # Шаблон для точки на карте
         point = {
             "id": i,
             "type": "Feature",
@@ -197,7 +212,7 @@ def get_coords_and_profile(request):
         }
         x = json.dumps(el.coords_x, cls=DecimalEncoder)[1:-2]
         y = json.dumps(el.coords_y, cls=DecimalEncoder)[1:-2]
-        point['geometry']['coordinates'] = [x, y]
+        point['geometry']['coordinates'] = [x, y] # Координаты
         pattern_point_properties['balloonContentHeader'] = f'{profile.card.name} <br>'
         if profile.photo.image.name != '':
             image = profile.photo.image.url
@@ -206,6 +221,7 @@ def get_coords_and_profile(request):
         image_html = f'<img alt="картинка" src="{image}" height="150" width="200" class="scale">'
         fio_html = f'<b>ФИО: </b>{user.last_name} {user.first_name} {profile.patronymic}'
         email_html = f'<b>Email: </b>{user.email}'
+        # Содержимое точки на карте
         pattern_point_properties[
             'balloonContentBody'] = f'{image_html} <br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{profile.card.name}'
         pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Ваша организация"'
