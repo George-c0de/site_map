@@ -279,7 +279,6 @@ def home_page(request):
 def send_message(
         password=env('SENDSAY_PASSWORD'),
         login_sendsay=env('SENDSAY_LOGIN'),
-        email='tering123@yandex.ru',
         email_sender=env('SENDSAY_EMAIL'),
         password_user=None,
         email_user=None
@@ -288,19 +287,19 @@ def send_message(
     response = api.request('issue.send', {
         'sendwhen': 'now',
         'letter': {
-            'subject': "Subject",
-            'from.name': "Tester",
+            'subject': "Регистрация",
+            'from.name': "Служба поддержки",
             'from.email': f"{email_sender}",
             'message': {
                 'html': f"Password: {password_user}\n Email: {email_user}"
             }
         },
         'relink': 1,
-        'users.list': f"{email}",
+        'users.list': f"{email_user}",
         'group': 'masssending',
     })
-
-    return Response(data=response, status=200)
+    print(response)
+    return True
 
 
 def register_page(request):
@@ -319,7 +318,6 @@ def register_page(request):
             form = CreateUserForm(register_user)
             if form.is_valid():
                 form.save()
-                send_message(password_user=request.POST.get('password1'), email_user=request.POST.get('email'))
                 user, image, profile = None, None, None
                 try:
                     user = User.objects.get(username=request.POST.get('email'))
@@ -335,6 +333,7 @@ def register_page(request):
                     form_profile = CreateProfileForm(profile_data)
                     if form_profile.is_valid():
                         form_profile.save()
+                        send_message(password_user=request.POST.get('password1'), email_user=request.POST.get('email'))
                         profile = Profile.objects.get(user_id=user.id)
                         save_change_map(profile, request.POST.get('map_coords'), request.POST.get('map_address'))
                     else:
