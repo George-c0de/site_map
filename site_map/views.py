@@ -212,7 +212,7 @@ def get_coords_and_profile(request):
         }
         x = json.dumps(el.coords_x, cls=DecimalEncoder)[1:-2]
         y = json.dumps(el.coords_y, cls=DecimalEncoder)[1:-2]
-        point['geometry']['coordinates'] = [x, y] # Координаты
+        point['geometry']['coordinates'] = [x, y]  # Координаты
         pattern_point_properties['balloonContentHeader'] = f'{profile.card.name} <br>'
         if profile.photo.image.name != '':
             image = profile.photo.image.url
