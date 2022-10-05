@@ -9,6 +9,18 @@ from rest_framework.response import Response
 from project.settings import env
 from .forms import *
 from .models import *
+import logging
+import re
+
+# Лог выводим на экран и в файл
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("debug.log"),
+        logging.StreamHandler()
+    ]
+)
 
 
 def login_page(request):
@@ -85,8 +97,36 @@ def delete_all(*args):
             el.delete()
 
 
+def validate_by_regexp(password, pattern):
+    """Валидация пароля по регулярному выражению."""
+    if re.match(pattern, password) is None:
+        return False
+    else:
+        return True
+
+
+def password_verification(password):
+    pattern = r'^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$'
+    if validate_by_regexp(password, pattern):
+        return password
+    else:
+        return None
+
+
+def change_password(user, new_password):
+    new_password = password_verification(new_password)
+    if new_password is None:
+        return 'Пароль не соответствует требованиям'
+    if user.check_password(new_password):
+        return ''
+    else:
+        user.set_password(new_password)
+        user.save()
+    return new_password
+
+
 def save_change_map(user, coords, name):
-    error_list = [None, '']
+    error_list = [None, '', ',']
     if coords in error_list:
         return None
     coords = coords.split(',')
@@ -113,11 +153,8 @@ def save_change_map(user, coords, name):
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
-        # 👇️ if passed in object is instance of Decimal
-        # convert it to a string
         if isinstance(obj, Decimal):
             return str(obj)
-        # 👇️ otherwise use the default behavior
         return json.JSONEncoder.default(self, obj)
 
 
@@ -170,7 +207,7 @@ def get_coords_and_profile(request):
         fio_html = f'<b>ФИО: </b>{user.last_name} {user.first_name} {profile.patronymic}'
         email_html = f'<b>Email: </b>{user.email}'
         pattern_point_properties[
-            'balloonContentBody'] = f'{image_html} <br/> {email_html}<br/>{fio_html}<b>Адрес: </b>{profile.card.name}'
+            'balloonContentBody'] = f'{image_html} <br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{profile.card.name}'
         pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Ваша организация"'
         pattern_point_properties[
             'hintContent'] = f'<img alt="картинка" src="{image}" height="100" width="100" >'
@@ -180,7 +217,7 @@ def get_coords_and_profile(request):
     return Response(data=result_end)
 
 
-def get_message(request, first_name, last_name, patronymic, map_coords, image):
+def get_message(request, first_name, last_name, patronymic, map_coords, image, password):
     if first_name != '':
         messages.success(request, 'Имя изменено')
     if last_name != '':
@@ -191,6 +228,10 @@ def get_message(request, first_name, last_name, patronymic, map_coords, image):
         messages.success(request, 'Данные карты изменены')
     if image is not None:
         messages.success(request, 'Фотография изменена')
+    if password == 'Пароль не соответствует требованиям':
+        messages.error(request, 'Пароль не соответствует требованиям')
+    elif password != '':
+        messages.success(request, 'Пароль изменен')
     return messages
 
 
@@ -206,16 +247,18 @@ def lk(request):
                 'patronymic': request.POST.get('patronymic'),
                 'map_coords': request.POST.get('map_coords'),
                 'map_address': request.POST.get('map_address'),
-                'image': request.FILES.get('image')
+                'image': request.FILES.get('image'),
+                'password': request.POST.get('password')
             }
             coords_profile = save_change_map(profile, data_user['map_coords'], data_user['map_address'])
             image = save_or_change_image(user=profile, image=data_user['image'])
             first_name = change_first_name(user=user, name=data_user['first_name'])
             last_name = change_last_name(user=user, name=data_user['last_name'])
             patronymic = change_patronymic(user=profile, name=data_user['patronymic'])
+            password = change_password(user, data_user['password'])
             get_message(request=request, first_name=first_name, last_name=last_name, map_coords=coords_profile,
                         image=image,
-                        patronymic=patronymic)
+                        patronymic=patronymic, password=password)
         context = {
             'user': profile,
             'auth': request.user.is_authenticated
@@ -233,13 +276,13 @@ def home_page(request):
     return render(request, 'site_map/home.html', context=context)
 
 
-@api_view(['GET'])
 def send_message(
-        request,
         password=env('SENDSAY_PASSWORD'),
         login_sendsay=env('SENDSAY_LOGIN'),
         email='tering123@yandex.ru',
-        email_sender=env('SENDSAY_EMAIL')
+        email_sender=env('SENDSAY_EMAIL'),
+        password_user=None,
+        email_user=None
 ):
     api = SendsayAPI(login=login_sendsay, password=password)
     response = api.request('issue.send', {
@@ -249,7 +292,7 @@ def send_message(
             'from.name': "Tester",
             'from.email': f"{email_sender}",
             'message': {
-                'html': "Sendsay API client test message<hr>Hello!"
+                'html': f"Password: {password_user}\n Email: {email_user}"
             }
         },
         'relink': 1,
@@ -276,6 +319,7 @@ def register_page(request):
             form = CreateUserForm(register_user)
             if form.is_valid():
                 form.save()
+                send_message(password_user=request.POST.get('password1'), email_user=request.POST.get('email'))
                 user, image, profile = None, None, None
                 try:
                     user = User.objects.get(username=request.POST.get('email'))
