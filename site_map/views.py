@@ -111,7 +111,6 @@ def validate_by_regexp(password, pattern):
 
 def password_verification(password):
     """
-
     :param password: Новый пароль
     :return: при успешной смене пароля возвращается сам пароль, иначе None
     """

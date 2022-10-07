@@ -140,8 +140,8 @@
             </div>
             {{ form.errors }}
             {% for message in messages %}
-				<p id = "messages">{{message}}</p>
-				{% endfor %}
+                <p id="messages">{{ message }}</p>
+            {% endfor %}
             <div class="mt-4">
                 <div class="d-flex justify-content-center links">
                     Уже есть аккаунт? <a href="{% url 'login' %}" class="ml-2">Войти</a>
@@ -157,8 +157,8 @@
     form_fields[1].placeholder = 'Имя';
     form_fields[2].placeholder = 'Фамилия';
     form_fields[3].placeholder = 'Отчество';
-    form_fields[4].placeholder = 'Логин..';
-    form_fields[5].placeholder = 'Почта..';
+    form_fields[4].placeholder = 'Почта..';
+    form_fields[5].placeholder = 'Пароль...';
     form_fields[6].placeholder = 'Пароль...';
     form_fields[7].placeholder = 'Повторите пароль...';
 
