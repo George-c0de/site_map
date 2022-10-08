@@ -313,7 +313,6 @@ def send_message(
         'users.list': f"{email_user}",
         'group': 'masssending',
     })
-    print(response)
     return True
 
 
