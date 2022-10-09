@@ -124,10 +124,12 @@ def password_verification(password):
 
 def change_password(user, new_password):
     new_password = password_verification(new_password)
-    if new_password is None:
-        return 'Пароль не соответствует требованиям'
     if user.check_password(new_password):
         return ''
+    if new_password == '' or new_password is None:
+        return ''
+    if new_password is None:
+        return 'Пароль не соответствует требованиям'
     else:
         user.set_password(new_password)
         user.save()
@@ -232,7 +234,7 @@ def get_coords_and_profile(request):
     return Response(data=result_end)
 
 
-def get_message(request, first_name, last_name, patronymic, map_coords, image, password):
+def get_message(request, first_name, last_name, patronymic, map_coords, image, password, email):
     if first_name != '':
         messages.success(request, 'Имя изменено')
     if last_name != '':
@@ -243,11 +245,29 @@ def get_message(request, first_name, last_name, patronymic, map_coords, image, p
         messages.success(request, 'Данные карты изменены')
     if image is not None:
         messages.success(request, 'Фотография изменена')
+    if email == 'Email уже существует':
+        messages.success(request, 'Email уже существует')
+    elif email != '':
+        messages.success(request, 'Почта изменена')
     if password == 'Пароль не соответствует требованиям':
         messages.error(request, 'Пароль не соответствует требованиям')
     elif password != '':
         messages.success(request, 'Пароль изменен')
+
     return messages
+
+
+def change_email(user, email):
+    error_list = ['', None]
+    if user.email == email or email in error_list:
+        return ''
+    elif User.objects.filter(email=email).exists():
+        return 'Email уже существует'
+    else:
+        user.email = email
+        user.username = email
+        user.save()
+        return email
 
 
 @api_view(['GET', 'POST'])
@@ -263,7 +283,8 @@ def lk(request):
                 'map_coords': request.POST.get('map_coords'),
                 'map_address': request.POST.get('map_address'),
                 'image': request.FILES.get('image'),
-                'password': request.POST.get('password')
+                'password': request.POST.get('password'),
+                'email': request.POST.get('email')
             }
             coords_profile = save_change_map(profile, data_user['map_coords'], data_user['map_address'])
             image = save_or_change_image(user=profile, image=data_user['image'])
@@ -271,9 +292,10 @@ def lk(request):
             last_name = change_last_name(user=user, name=data_user['last_name'])
             patronymic = change_patronymic(user=profile, name=data_user['patronymic'])
             password = change_password(user, data_user['password'])
+            email = change_email(user, data_user['email'])
             get_message(request=request, first_name=first_name, last_name=last_name, map_coords=coords_profile,
                         image=image,
-                        patronymic=patronymic, password=password)
+                        patronymic=patronymic, password=password, email=email)
         context = {
             'user': profile,
             'auth': request.user.is_authenticated
@@ -352,12 +374,19 @@ def register_page(request):
                         save_change_map(profile, request.POST.get('map_coords'), request.POST.get('map_address'))
                     else:
                         delete_all(user, image)
-                    messages.success(request, 'Аккаунт создан,' + user.username)
+                    messages.success(request, 'Аккаунт создан, ' + user.username)
                     return redirect('login')
                 except BaseException as e:
                     print(e)
                     delete_all(user, image, profile)
             else:
-                messages.error(request, 'Ошибка при создании аккаунта')
+                for count, value in enumerate(form.errors, start=0):
+                    if value == 'username':
+                        messages.error(request, 'Аккаунт с таким Email уже существует\n')
+                    elif value == 'password2':
+                        messages.error(request, 'Пароль не соответствует требованиям\n')
+                    elif value == 'password1':
+                        messages.error(request, 'Пароль не соответствует требованиям\n')
+                # messages.error(request, form.errors)
                 return render(request, 'site_map/register.html')
         return render(request, 'site_map/register.html')
