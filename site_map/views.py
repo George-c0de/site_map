@@ -247,6 +247,8 @@ def get_message(request, first_name, last_name, patronymic, map_coords, image, p
         messages.success(request, 'Фотография изменена')
     if email == 'Email уже существует':
         messages.success(request, 'Email уже существует')
+    elif email == 'Email указан неверно':
+        messages.success(request, 'Email указан неверно')
     elif email != '':
         messages.success(request, 'Почта изменена')
     if password == 'Пароль не соответствует требованиям':
@@ -258,6 +260,9 @@ def get_message(request, first_name, last_name, patronymic, map_coords, image, p
 
 
 def change_email(user, email):
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    if not re.fullmatch(regex, email):
+        return 'Email указан неверно'
     error_list = ['', None]
     if user.email == email or email in error_list:
         return ''
