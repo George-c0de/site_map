@@ -88,6 +88,14 @@ function init() {
                             // В качестве контента балуна задаем строку с адресом объекта.
                             balloonContent: firstGeoObject.getAddressLine()
                         });
+                    if (firstGeoObject.getLocalities().length === 0) {
+                        document.getElementById('filter_coords').value = myPlacemark.properties.getLocalities();
+                        console.log(myPlacemark.properties.getLocalities());
+                    } else {
+                        document.getElementById('filter_coords').value = firstGeoObject.getLocalities()[0];
+                        console.log(firstGeoObject.getLocalities()[0]);
+                    }
+                    console.log(myPlacemark.properties.get('balloonContent'));
                     document.getElementById('map_address').value = myPlacemark.properties.get('balloonContent');
                 });
             }

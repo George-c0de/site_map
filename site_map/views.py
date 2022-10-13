@@ -1,4 +1,8 @@
+import os
 from decimal import Decimal
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from sendsay.api import SendsayAPI
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -51,10 +55,12 @@ def save_or_change_image(image, user):
     :return: При успешной смене картинки и ее сохранении: возвращается сама картинка, иначе None
     """
     if image is not None:
-        if user.photo is not None:
+        if user.photo.image.name:
             delete_image = Image.objects.get(id=user.photo.id)
-            delete_image.delete()
+            os.remove(delete_image.image.path)
             user.photo = None
+            user.save()
+            delete_image.delete()
             image_save = Image(image=image)
             image_save.save()
             user.photo = image_save
@@ -136,7 +142,7 @@ def change_password(user, new_password):
     return new_password
 
 
-def save_change_map(user, coords, name):
+def save_change_map(user, coords, name, map_filter):
     error_list = [None, '', ',']
     if coords in error_list:
         return None
@@ -145,21 +151,14 @@ def save_change_map(user, coords, name):
         return None
     for el in range(0, len(coords)):
         coords[el] = Decimal(coords[el])
-    if user.card is not None:
-        coords_user = Coords.objects.get(id=user.card.id)
-        if coords_user.coords_x == coords[0] and coords_user.coords_y == coords[1]:
-            return None
-        coords_user.delete()
-        coords_profile = Coords(coords_x=coords[0], coords_y=coords[1], name=name)
-        coords_profile.save()
-        user.card = coords_profile
-        user.save()
-    else:
-        coords_profile = Coords(coords_x=coords[0], coords_y=coords[1], name=name)
-        coords_profile.save()
-        user.card = coords_profile
-        user.save()
-    return coords_profile
+    map_coords = Coords(
+        coords_x=coords[0],
+        coords_y=coords[1],
+        name=name,
+        filter_coords=map_filter,
+        user=user
+    ).save()
+    return map_coords
 
 
 class DecimalEncoder(json.JSONEncoder):
@@ -178,9 +177,10 @@ def get_filter(request):
     coords = Coords.objects.all()
     result_end = []
     for el in coords:
-        if el.name.split(',')[1][1:] not in result_end:
-            result_end.append(el.name.split(',')[1][1:])
-    return Response(data=result_end)
+        if el.filter_coords not in result_end:
+            result_end.append(el.filter_coords)
+    print(sorted(result_end))
+    return Response(data=sorted(result_end))
 
 
 @api_view(['GET'])
@@ -192,7 +192,7 @@ def get_coords_and_profile(request):
     }
     i = 0
     for el in coords:
-        profile = Profile.objects.get(card=el)
+        profile = Profile.objects.get(id=el.user.id)
         user = profile.user
         # Шаблон для точки на карте
         point = {
@@ -208,13 +208,13 @@ def get_coords_and_profile(request):
             }
         }
         pattern_point_properties = {
-            "balloonContent": f"{profile.card.name.split(',')[1][1:]}",
-            "clusterCaption": f"{profile.card.name.split(',')[1][1:]}"
+            "balloonContent": f"{el.filter_coords}",
+            "clusterCaption": f"{el.filter_coords}"
         }
         x = json.dumps(el.coords_x, cls=DecimalEncoder)[1:-2]
         y = json.dumps(el.coords_y, cls=DecimalEncoder)[1:-2]
         point['geometry']['coordinates'] = [x, y]  # Координаты
-        pattern_point_properties['balloonContentHeader'] = f'{profile.card.name} <br>'
+        pattern_point_properties['balloonContentHeader'] = f'{el.address} <br>'
         if profile.photo.image.name != '':
             image = profile.photo.image.url
         else:
@@ -224,7 +224,7 @@ def get_coords_and_profile(request):
         email_html = f'<b>Email: </b>{user.email}'
         # Содержимое точки на карте
         pattern_point_properties[
-            'balloonContentBody'] = f'{image_html} <br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{profile.card.name}'
+            'balloonContentBody'] = f'{image_html} <br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{el.address}'
         pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Ваша организация"'
         pattern_point_properties[
             'hintContent'] = f'<img alt="картинка" src="{image}" height="100" width="100" >'
@@ -234,15 +234,13 @@ def get_coords_and_profile(request):
     return Response(data=result_end)
 
 
-def get_message(request, first_name, last_name, patronymic, map_coords, image, password, email):
+def get_message(request, first_name, last_name, patronymic, image, password, email):
     if first_name != '':
         messages.success(request, 'Имя изменено')
     if last_name != '':
         messages.success(request, 'Фамилия изменена')
     if patronymic != '':
         messages.success(request, 'Отчество изменено')
-    if map_coords is not None:
-        messages.success(request, 'Данные карты изменены')
     if image is not None:
         messages.success(request, 'Фотография изменена')
     if email == 'Email уже существует':
@@ -285,25 +283,24 @@ def lk(request):
                 'first_name': request.POST.get('first_name'),
                 'last_name': request.POST.get('last_name'),
                 'patronymic': request.POST.get('patronymic'),
-                'map_coords': request.POST.get('map_coords'),
-                'map_address': request.POST.get('map_address'),
                 'image': request.FILES.get('image'),
                 'password': request.POST.get('password'),
                 'email': request.POST.get('email')
             }
-            coords_profile = save_change_map(profile, data_user['map_coords'], data_user['map_address'])
             image = save_or_change_image(user=profile, image=data_user['image'])
             first_name = change_first_name(user=user, name=data_user['first_name'])
             last_name = change_last_name(user=user, name=data_user['last_name'])
             patronymic = change_patronymic(user=profile, name=data_user['patronymic'])
             password = change_password(user, data_user['password'])
             email = change_email(user, data_user['email'])
-            get_message(request=request, first_name=first_name, last_name=last_name, map_coords=coords_profile,
-                        image=image,
-                        patronymic=patronymic, password=password, email=email)
+            get_message(request=request, first_name=first_name, last_name=last_name, image=image, patronymic=patronymic,
+                        password=password, email=email)
+            if password != '':
+                return redirect(request.META.get('HTTP_REFERER', 'redirect_if_referer_not_found'))
         context = {
             'user': profile,
-            'auth': request.user.is_authenticated
+            'auth': request.user.is_authenticated,
+            'coords': Coords.objects.filter(user=Profile.objects.get(user=user))
         }
         return render(request, 'site_map/personal_area.html', context=context)
     else:
@@ -312,8 +309,18 @@ def lk(request):
 
 @api_view(['GET', 'POST'])
 def home_page(request):
+    table_data = []
+    i = 0
+    for el in Coords.objects.all():
+        i += 1
+        table_data.append({
+            'id': i,
+            'fio': el.user.user.last_name + ' ' + el.user.user.first_name + ' ' + el.user.patronymic,
+            'address': el.address
+        })
     context = {
-        'auth': request.user.is_authenticated
+        'auth': request.user.is_authenticated,
+        'table_data': table_data
     }
     return render(request, 'site_map/home.html', context=context)
 
@@ -343,6 +350,48 @@ def send_message(
     return True
 
 
+def add_coords(request):
+    return render(request, 'site_map/add_coords.html')
+
+
+@csrf_exempt
+def delete_coords(request):
+    try:
+        coords_id = request.POST.get('coords_id')
+        if Coords.objects.filter(id=coords_id).exists():
+            Coords.objects.get(id=coords_id).delete()
+    except BaseException as e:
+        print(e)
+        return JsonResponse({'error': 'Some error'}, status=400)
+    else:
+        return JsonResponse({'error': 'Some error'}, status=200)
+
+
+@csrf_exempt
+def add_coord(request):
+    try:
+        address = request.POST.get('address')
+        coords_x = request.POST.get('coords_x')
+        coords_y = request.POST.get('coords_y')
+        filter_coords = request.POST.get('filter_coords')
+        list_error = ['', None]
+        if address not in list_error and filter_coords not in list_error:
+            Coords.objects.create(
+                address=address,
+                coords_x=coords_x,
+                coords_y=coords_y,
+                filter_coords=filter_coords,
+                user=Profile.objects.get(user=request.user)
+            ).save()
+        else:
+            return JsonResponse({'error': 'Some error'}, status=400)
+    except BaseException as e:
+        print(e)
+        return JsonResponse({'error': 'Some error'}, status=400)
+    else:
+        return JsonResponse({'error': 'Some error'}, status=200)
+
+
 def register_page(request):
     if request.user.is_authenticated:
         return redirect('home')
@@ -368,7 +417,6 @@ def register_page(request):
                     profile_data = {
                         'user': user,
                         'patronymic': patronymic,
-                        'card': None,
                         'photo': image
                     }
                     form_profile = CreateProfileForm(profile_data)
@@ -376,11 +424,13 @@ def register_page(request):
                         form_profile.save()
                         send_message(password_user=request.POST.get('password1'), email_user=request.POST.get('email'))
                         profile = Profile.objects.get(user_id=user.id)
-                        save_change_map(profile, request.POST.get('map_coords'), request.POST.get('map_address'))
                     else:
                         delete_all(user, image)
                     messages.success(request, 'Аккаунт создан, ' + user.username)
-                    return redirect('login')
+                    if not request.user.is_authenticated:
+                        user = authenticate(request, username=user.username, password=register_user['password1'])
+                        login(request, user)
+                    return redirect('add_coords')
                 except BaseException as e:
                     print(e)
                     delete_all(user, image, profile)

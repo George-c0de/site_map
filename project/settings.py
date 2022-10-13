@@ -34,7 +34,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'site_map',
     'rest_framework',
-    'django_cleanup',
 ]
 # AUTH_USER_MODEL = 'site_map.User'
 MIDDLEWARE = [

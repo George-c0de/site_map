@@ -39,6 +39,26 @@ CustomSearchProvider.prototype.geocode = function (request, options) {
             boundedBy: [coords, coords]
         }));
     }
+    let data_table = document.getElementById('data_table')
+    while (data_table.firstChild) {
+        data_table.removeChild(data_table.firstChild);
+    }
+    for (var i = 0, l = points.length; i < l; i++) {
+        let th = document.createElement('tr');
+        data_table.insertBefore(th, data_table.firstChild)
+        let data_table2 = th;
+        var point = points[i];
+        var title = document.createElement('th');
+        title.scope = "row";
+        title.innerHTML = String(points.length - i);
+        var fio = document.createElement('td');
+        fio.innerHTML = String(point['properties'].balloonContentHeader.slice(0, -4));
+        var address = document.createElement('td');
+        address.innerHTML = String(point['properties'].balloonContentBody.split('<b>')[2].slice(4, -1));
+        data_table2.insertBefore(fio, data_table2.firstChild);
+        data_table2.insertBefore(address, data_table2.firstChild);
+        data_table2.insertBefore(title, data_table2.firstChild);
+    }
     deferred.resolve({
         // Геообъекты поисковой выдачи.
         geoObjects: geoObjects,
@@ -130,6 +150,26 @@ function init() {
                     if (objectManager.getObjectState(el)['isFilteredOut'] === false) {
                         object_arr.push(objectManager.objects.getAll()[el])
                     }
+                }
+                let data_table = document.getElementById('data_table')
+                while (data_table.firstChild) {
+                    data_table.removeChild(data_table.firstChild);
+                }
+                for (var i = 0, l = object_arr.length; i < l; i++) {
+                    let th = document.createElement('tr');
+                    data_table.insertBefore(th, data_table.firstChild)
+                    let data_table2 = th;
+                    var point = object_arr[i];
+                    var title = document.createElement('th');
+                    title.scope = "row";
+                    title.innerHTML = String(object_arr.length - i);
+                    var fio = document.createElement('td');
+                    fio.innerHTML = String(point['properties'].balloonContentHeader.slice(0, -4));
+                    var address = document.createElement('td');
+                    address.innerHTML = String(point['properties'].balloonContentBody.split('<b>')[2].slice(4, -1));
+                    data_table2.insertBefore(fio, data_table2.firstChild);
+                    data_table2.insertBefore(address, data_table2.firstChild);
+                    data_table2.insertBefore(title, data_table2.firstChild);
                 }
                 var mySearchControl = new ymaps.control.SearchControl({
                     options: {

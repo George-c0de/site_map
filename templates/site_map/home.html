@@ -7,11 +7,13 @@
 {% block style %}
     <style>
         .scale {
-    transition: 1s; /* Время эффекта */
-   }
-   .scale:hover {
-    transform: scale(1.2); /* Увеличиваем масштаб */
-   }
+            transition: 1s; /* Время эффекта */
+        }
+
+        .scale:hover {
+            transform: scale(1.2); /* Увеличиваем масштаб */
+        }
+
         #map {
             width: 1300px;
             height: 600px;
@@ -27,5 +29,25 @@
         <input type="hidden" value="{{ y }}" id="y">
         <input type="hidden" value="{{ names }}" id="names">
         <div id="map"></div>
+    </div>
+    <div class="container">
+        <table class="table" id="table">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">ФИО</th>
+                <th scope="col">Адрес</th>
+            </tr>
+            </thead>
+            <tbody id="data_table">
+            {% for el in table_data %}
+                <tr>
+                    <th scope="row">{{ el.id }}</th>
+                    <td>{{ el.fio }}</td>
+                    <td>{{ el.address }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock %}
