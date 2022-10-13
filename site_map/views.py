@@ -179,7 +179,6 @@ def get_filter(request):
     for el in coords:
         if el.filter_coords not in result_end:
             result_end.append(el.filter_coords)
-    print(sorted(result_end))
     return Response(data=sorted(result_end))
 
 
