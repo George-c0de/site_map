@@ -2,8 +2,7 @@ let response = [];
 
 async function load_data() {
     let res = await fetch('/get_coords_and_profile')
-    let data = await res.json();
-    response = data;
+    response = await res.json();
     ymaps.ready(init);
 }
 
