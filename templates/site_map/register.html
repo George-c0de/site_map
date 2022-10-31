@@ -5,12 +5,10 @@
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&amp;apikey=4516ee1c-9055-4678-95bf-c5ddc12a7aa1"
             type="text/javascript"></script>
     <title>Регистрация</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
-          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css"
-          integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
-
+    <script src="https://kit.fontawesome.com/51a493f76c.js" crossorigin="anonymous"></script>
     <style>
         body,
         html {
@@ -84,45 +82,259 @@
                     {% csrf_token %}
                     <div class="input-group mb-2">
                         <div class="input-group-append">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <span class="input-group-text" style="height: 100%"><i class="fas fa-user"></i></span>
                         </div>
                         <input type="text" name="first_name">
                     </div>
                     <div class="input-group mb-2">
                         <div class="input-group-append">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <span class="input-group-text" style="height: 100%"><i class="fas fa-user"></i></span>
                         </div>
                         <input type="text" name="last_name">
                     </div>
                     <div class="input-group mb-2">
                         <div class="input-group-append">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <span class="input-group-text" style="height: 100%"><i class="fas fa-user"></i></span>
                         </div>
                         <input type="text" name="patronymic">
                     </div>
                     <div class="input-group mb-2">
                         <div class="input-group-append">
-                            <span class="input-group-text"><i class="fas fa-envelope-square"></i></span>
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fas fa-envelope-square"></i></span>
                         </div>
                         <input required type="email" name="email">
                     </div>
                     <div class="input-group mb-2">
                         <div class="input-group-append">
-                            <span class="input-group-text"><i class="fas fa-key"></i></span>
+                            <span class="input-group-text" style="height: 100%"><i class="fas fa-key"></i></span>
                         </div>
                         <input required type="password" name="password1">
                     </div>
                     <div class="input-group mb-2">
                         <div class="input-group-append">
-                            <span class="input-group-text"><i class="fas fa-key"></i></span>
+                            <span class="input-group-text" style="height: 100%"><i class="fas fa-key"></i></span>
                         </div>
                         <input required type="password" name="password2">
                     </div>
                     <div class="input-group mb-2">
                         <div class="input-group-append">
-                            <span class="input-group-text"><i class="fas fa-image"></i></span>
+                            <span class="input-group-text" style="height: 100%"><i class="fas fa-image"></i></span>
                         </div>
                         <input id="im1" name="image" type="file" accept="image/*">
+                    </div>
+                    <label for="post_value">Должность</label>
+                    <div class="input-group mb-2">
+                        <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fa-solid fa-briefcase"></i></span>
+                        </div>
+                        <select class="form-select" name="position" onclick="get_post()" id="post_value">
+                            <option value="Офтальмолог">Офтальмолог</option>
+                            <option value="Оптометрист">Оптометрист</option>
+                            <option value="3">Другое:</option>
+                        </select>
+                        <input style="visibility: hidden" id="value_other" name="other_position" type="text"
+                               placeholder="Должность">
+                    </div>
+                    <div class="input-group mb-2">
+                        <label for="8">Специализированное обучение по контактной
+                            коррекции</label>
+                        <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i class="fa-solid fa-circle-info"></i></span>
+                        </div>
+                        <input id="8" name="specialized_training" type="text"
+                               placeholder="Например, 1 и 2 ступень BestVisionLab">
+                    </div>
+                    <div class="input-group mb-2">
+                        <label for="10">Cтандартные мягкие контактные линзы</label>
+                        <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fa-solid fa-glasses"></i></span>
+                        </div>
+                        <select name="standard_soft" id="10" class="form-select">
+                            <option value="YES">Да</option>
+                            <option value="NO">Нет</option>
+                        </select>
+                    </div>
+                    <div class="input-group mb-2">
+                        <label for="11">Специальные мягкие контактные линзы для контроля миопии</label>
+                        <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fa-solid fa-glasses"></i></span>
+                        </div>
+                        <select name="standard_soft_for_myopia" id="11" class="form-select">
+                            <option value="YES">Да</option>
+                            <option value="NO">Нет</option>
+                        </select>
+                    </div>
+                    <div class="input-group mb-2">
+                        <label for="12">Индивидуальные мягкие контактные линзы</label>
+                        <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fa-solid fa-glasses"></i></span>
+                        </div>
+                        <select name="customized_soft_contact_lenses" id="12" class="form-select">
+                            <option value="YES">Да</option>
+                            <option value="NO">Нет</option>
+                        </select>
+                    </div>
+                    <div class="input-group mb-2">
+                        <label for="13">Мягкие контактные линзы для кератоконуса</label>
+                        <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fa-solid fa-glasses"></i></span>
+                        </div>
+                        <select name="soft_contact_lenses_for_keratoconus" id="13" class="form-select">
+                            <option value="YES">Да</option>
+                            <option value="NO">Нет</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="15">Ортокератологические линзы c фиксированным дизайном</label>
+                        <div class="input-group mb-3">
+                            <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fa-solid fa-glasses"></i></span>
+                            </div>
+                            <input name="other_orthokeratological_lenses" id="15" style="visibility: hidden">
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="orthokeratological_lenses_1" class="form-check-input" type="checkbox"
+                                   id="inlineCheckbox1" value="Contex">
+                            <label class="form-check-label" for="inlineCheckbox1">Contex</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="orthokeratological_lenses_2" class="form-check-input" type="checkbox"
+                                   id="inlineCheckbox2" value="DL-ESA">
+                            <label class="form-check-label" for="inlineCheckbox2">DL-ESA</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="orthokeratological_lenses_3" class="form-check-input" type="checkbox"
+                                   id="inlineCheckbox3" value="Emerald">
+                            <label class="form-check-label" for="inlineCheckbox3">Emerald</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="orthokeratological_lenses_4" class="form-check-input" type="checkbox"
+                                   id="inlineCheckbox4" value="MoonLens">
+                            <label class="form-check-label" for="inlineCheckbox4">MoonLens</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="orthokeratological_lenses_5" class="form-check-input" type="checkbox"
+                                   id="inlineCheckbox5" value="OKVision">
+                            <label class="form-check-label" for="inlineCheckbox5">OKVision</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="orthokeratological_lenses_6" class="form-check-input" type="checkbox"
+                                   id="inlineCheckbox6" value="Paragon CRT">
+                            <label class="form-check-label" for="inlineCheckbox6">Paragon CRT</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="orthokeratological_lenses_7" class="form-check-input" type="checkbox"
+                                   id="inlineCheckbox7" value="Нет">
+                            <label class="form-check-label" for="inlineCheckbox7">Нет</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="orthokeratological_lenses_8" class="form-check-input" type="checkbox"
+                                   onclick="get_checkbox()"
+                                   id="inlineCheckbox8" value="Другое">
+                            <label class="form-check-label" for="inlineCheckbox8">Другое</label>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="14">Кастомизированные ортокератологические линзы</label>
+                        <div class="input-group mb-3">
+                            <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fa-solid fa-glasses"></i></span>
+                            </div>
+                            <input name="other_customized_orthokeratological_lenses" id="14" style="visibility: hidden">
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="customized_orthokeratological_lenses_1" class="form-check-input"
+                                   type="checkbox" id="inline1" value="RGP Designer">
+                            <label class="form-check-label" for="inline1">RGP Designer</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="customized_orthokeratological_lenses_2" class="form-check-input"
+                                   type="checkbox" id="inline2" value="OrthoTool">
+                            <label class="form-check-label" for="inline2">OrthoTool</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="customized_orthokeratological_lenses_3" class="form-check-input"
+                                   type="checkbox" id="inline3" value="Нет">
+                            <label class="form-check-label" for="inline3">Нет</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input name="customized_orthokeratological_lenses_4" class="form-check-input"
+                                   type="checkbox" id="inline4" onclick="get_check()"
+                                   value="Другое">
+                            <label class="form-check-label" for="inline4">Другое</label>
+                        </div>
+
+                    </div>
+                    <div class="input-group mb-2">
+                        <label for="16">Роговичные жесткие газопроницаемые контактные линзы</label>
+                        <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fa-solid fa-glasses"></i></span>
+                        </div>
+                        <select name="corneal_rigid" id="16" class="form-select">
+                            <option value="YES">Да</option>
+                            <option value="NO">Нет</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="17">Склеральные линзы</label>
+                        <div class="input-group mb-2">
+                            <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fa-solid fa-glasses"></i></span>
+                            </div>
+                            <input name="other_scleral_lenses" style="visibility: hidden" id="17">
+                        </div>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio1"
+                                       value="OKVision SMARTFIT" onclick="get_radio()">
+                                <label class="form-check-label" for="inlineRadio1">OKVision SMARTFIT</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio2"
+                                       value="SkyOptix ZenLens" onclick="get_radio()">
+                                <label class="form-check-label" for="inlineRadio2">SkyOptix ZenLens</label>
+                            </div>
+                            <br>
+                            <div class="form-check form-check-inline">
+                                <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio3"
+                                       value="Нет" onclick="get_radio()">
+                                <label class="form-check-label" for="inlineRadio3">Нет</label>
+                            </div>
+                            <br>
+                            <div class="form-check form-check-inline">
+                                <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio4"
+                                       value="Другое" onclick="get_radio()">
+                                <label class="form-check-label" for="inlineRadio4">Другое</label>
+                            </div>
+                            <br>
+                        </div>
+                    </div>
+                    <label for="20">Дополнительная информация об опыте в контактной коррекции</label>
+                    <div class="input-group mb-2">
+                        <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fa-solid fa-hourglass"></i></span>
+                        </div>
+                        <input name="description" id="20" placeholder="год начала практики, регалии и др."
+                               title="(Количество знаков не более 200)">
+                    </div>
+                    <label for="21">Контактный телефон для коллег</label>
+                    <div class="input-group mb-2">
+                        <div class="input-group-append">
+                            <span class="input-group-text" style="height: 100%"><i
+                                    class="fa-solid fa-phone"></i></span>
+                        </div>
+                        <input name="number" id="21" placeholder="81112223344" title="Формат: 81112223344" required>
                     </div>
                     <div class="d-flex justify-content-center mt-3 login_container">
                         <input class="btn login_btn" type="submit" value="Зарегистрироваться">
@@ -155,6 +367,54 @@
 
     for (const field in form_fields) {
         form_fields[field].className += ' form-control'
+    }
+
+    function get_radio() {
+        let radio = document.getElementById('inlineRadio4');
+        let onclick_input = document.getElementById('17');
+        if (radio.checked) {
+            onclick_input.style.visibility = "visible";
+            onclick_input.setAttribute('required', 'true');
+        } else {
+            onclick_input.style.visibility = "hidden";
+            onclick_input.removeAttribute('required');
+        }
+    }
+
+    function get_check() {
+        let get_checkbox = document.getElementById('inline4');
+        let onclick_check = document.getElementById('14');
+        if (get_checkbox.checked) {
+            onclick_check.style.visibility = "visible";
+            onclick_check.setAttribute('required', 'true');
+        } else {
+            onclick_check.style.visibility = "hidden";
+            onclick_check.removeAttribute('required');
+        }
+    }
+
+    function get_checkbox() {
+        let get_checkbox = document.getElementById('inlineCheckbox8');
+        let onclick_check = document.getElementById('15');
+        if (get_checkbox.checked) {
+            onclick_check.style.visibility = "visible";
+            onclick_check.setAttribute('required', 'true');
+        } else {
+            onclick_check.style.visibility = "hidden";
+            onclick_check.removeAttribute('required');
+        }
+    }
+
+    function get_post() {
+        let post = document.getElementById('post_value');
+        let other = document.getElementById('value_other');
+        if (String(post.value) === String(3)) {
+            other.style.visibility = "visible";
+            other.setAttribute('required', 'true');
+        } else {
+            other.style.visibility = "hidden";
+            other.removeAttribute('required');
+        }
     }
 </script>
 </body>

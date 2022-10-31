@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 from django.forms import ModelForm, NumberInput
 
-from site_map.models import Profile
+from site_map.models import Profile, OrthokeratologyFixedDesignLenses, CustomizedOrthokeratologicalLenses
 from django import forms
 
 
@@ -16,4 +16,16 @@ class CreateUserForm(UserCreationForm):
 class CreateProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['user', 'photo', 'patronymic']
+        fields = '__all__'
+
+
+class CreateOrthokeratologyFixedDesignLensesForm(forms.ModelForm):
+    class Meta:
+        model = OrthokeratologyFixedDesignLenses
+        fields = '__all__'
+
+
+class CreateCustomizedOrthokeratologicalLensesForm(forms.ModelForm):
+    class Meta:
+        model = CustomizedOrthokeratologicalLenses
+        fields = '__all__'
