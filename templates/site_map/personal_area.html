@@ -68,6 +68,182 @@
                                 Please enter a valid email address for shipping updates.
                             </div>
                         </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Должность
+                                <input value="{{ user.position }}" class="form-control" type="text" name="position">
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Специализированное обучение по контактной коррекции
+                                <input value="{{ user.specialized_training }}" class="form-control" type="text"
+                                       name="specialized_training">
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Дополнительная информация об опыте в контактной коррекции
+                                <input maxlength="200" value="{{ user.description }}" class="form-control" type="text"
+                                       name="description">
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Контактный телефон для коллег
+                                <input maxlength="30" value="{{ user.number }}" class="form-control" type="text" name="number">
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Cтандартные мягкие контактные линзы
+                                <select name="standard_soft" class="form-select">
+                                    <option value="0"></option>
+                                    <option value="YES">YES</option>
+                                    <option value="NO">NO</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Специальные мягкие контактные линзы для контроля миопии
+                                <select name="standard_soft_for_myopia" class="form-select">
+                                    <option value="0"></option>
+                                    <option value="YES">YES</option>
+                                    <option value="NO">NO</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Индивидуальные мягкие контактные линзы
+                                <select name="customized_soft_contact_lenses" class="form-select">
+                                    <option value="0"></option>
+                                    <option value="YES">YES</option>
+                                    <option value="NO">NO</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Мягкие контактные линзы для кератоконуса
+                                <select name="soft_contact_lenses_for_keratoconus" class="form-select">
+                                    <option value="0"></option>
+                                    <option value="YES">YES</option>
+                                    <option value="NO">NO</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">Роговичные жесткие газопроницаемые контактные линзы
+                                <select name="corneal_rigid" class="form-select">
+                                    <option value="0"></option>
+                                    <option value="YES">YES</option>
+                                    <option value="NO">NO</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label for="17">Склеральные линзы</label>
+                            <div class="input-group mb-2">
+                                <input name="other_scleral_lenses" style="visibility: hidden" id="17">
+                            </div>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio1"
+                                           value="OKVision SMARTFIT" onclick="get_radio()">
+                                    <label class="form-check-label" for="inlineRadio1">OKVision SMARTFIT</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio2"
+                                           value="SkyOptix ZenLens" onclick="get_radio()">
+                                    <label class="form-check-label" for="inlineRadio2">SkyOptix ZenLens</label>
+                                </div>
+                                <br>
+                                <div class="form-check form-check-inline">
+                                    <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio3"
+                                           value="Нет" onclick="get_radio()">
+                                    <label class="form-check-label" for="inlineRadio3">Нет</label>
+                                </div>
+                                <br>
+                                <div class="form-check form-check-inline">
+                                    <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio4"
+                                           value="Другое" onclick="get_radio()">
+                                    <label class="form-check-label" for="inlineRadio4">Другое</label>
+                                </div>
+                                <br>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="15">Ортокератологические линзы c фиксированным дизайном</label>
+                            <div class="input-group mb-3">
+                                <input name="other_orthokeratological_lenses" id="15" style="visibility: hidden">
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="orthokeratological_lenses_1" class="form-check-input" type="checkbox"
+                                       id="inlineCheckbox1" value="Contex">
+                                <label class="form-check-label" for="inlineCheckbox1">Contex</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="orthokeratological_lenses_2" class="form-check-input" type="checkbox"
+                                       id="inlineCheckbox2" value="DL-ESA">
+                                <label class="form-check-label" for="inlineCheckbox2">DL-ESA</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="orthokeratological_lenses_3" class="form-check-input" type="checkbox"
+                                       id="inlineCheckbox3" value="Emerald">
+                                <label class="form-check-label" for="inlineCheckbox3">Emerald</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="orthokeratological_lenses_4" class="form-check-input" type="checkbox"
+                                       id="inlineCheckbox4" value="MoonLens">
+                                <label class="form-check-label" for="inlineCheckbox4">MoonLens</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="orthokeratological_lenses_5" class="form-check-input" type="checkbox"
+                                       id="inlineCheckbox5" value="OKVision">
+                                <label class="form-check-label" for="inlineCheckbox5">OKVision</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="orthokeratological_lenses_6" class="form-check-input" type="checkbox"
+                                       id="inlineCheckbox6" value="Paragon CRT">
+                                <label class="form-check-label" for="inlineCheckbox6">Paragon CRT</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="orthokeratological_lenses_7" class="form-check-input" type="checkbox"
+                                       id="inlineCheckbox7" value="Нет">
+                                <label class="form-check-label" for="inlineCheckbox7">Нет</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="orthokeratological_lenses_8" class="form-check-input" type="checkbox"
+                                       onclick="get_checkbox()"
+                                       id="inlineCheckbox8" value="Другое">
+                                <label class="form-check-label" for="inlineCheckbox8">Другое</label>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="14">Кастомизированные ортокератологические линзы</label>
+                            <div class="input-group mb-3">
+                                <input name="other_customized_orthokeratological_lenses" id="14"
+                                       style="visibility: hidden">
+                            </div>
+
+                            <div class="form-check form-check-inline">
+                                <input name="customized_orthokeratological_lenses_1" class="form-check-input"
+                                       type="checkbox" id="inline1" value="RGP Designer">
+                                <label class="form-check-label" for="inline1">RGP Designer</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="customized_orthokeratological_lenses_2" class="form-check-input"
+                                       type="checkbox" id="inline2" value="OrthoTool">
+                                <label class="form-check-label" for="inline2">OrthoTool</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="customized_orthokeratological_lenses_3" class="form-check-input"
+                                       type="checkbox" id="inline3" value="Нет">
+                                <label class="form-check-label" for="inline3">Нет</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input name="customized_orthokeratological_lenses_4" class="form-check-input"
+                                       type="checkbox" id="inline4" onclick="get_check()"
+                                       value="Другое">
+                                <label class="form-check-label" for="inline4">Другое</label>
+                            </div>
+
+                        </div>
 
 
                         <div class="col-sm-6">
@@ -88,6 +264,7 @@
                                      src="{{ user.photo.image.url }}" alt="Картинка">
                             {% endif %}
                         </div>
+
                         <div class="col-12">
                             <label>
                                 <select id="delete_map">
@@ -109,5 +286,122 @@
             </div>
         </main>
     </div>
+    <script>
+        $.ajax({
+            url: "/get_info"
+        }).done(function (data) {
+            if (data['orthokeratological_lenses']['RGP Designer'.toUpperCase()]) {
+                let check_1 = document.getElementById('inline1');
+                check_1.checked = true;
+            }
+            if (data['orthokeratological_lenses']['OrthoTool'.toUpperCase()]) {
+                let check_2 = document.getElementById('inline2');
+                check_2.checked = true;
+            }
+            if (data['orthokeratological_lenses']['Нет'.toUpperCase()]) {
+                let check_3 = document.getElementById('inline3');
+                check_3.checked = true;
+            }
+            if (data['orthokeratological_lenses']['Другое'.toUpperCase()]) {
+                let check_4 = document.getElementById('inline4');
+                let check_5 = document.getElementById('14');
+                check_5.value = data['orthokeratological_lenses']['Другое'.toUpperCase()];
+                check_5.style.visibility = "visible";
+                check_4.checked = true;
+            }
+
+            let d_names = {
+                'Contex': 'inlineCheckbox1',
+                'DL-ESA': 'inlineCheckbox2',
+                'Emerald': 'inlineCheckbox3',
+                'MoonLens': 'inlineCheckbox4',
+                'OKVision': 'inlineCheckbox5',
+                'Paragon CRT': 'inlineCheckbox6',
+                'нет': 'inlineCheckbox7',
+                'Другое': 'inlineCheckbox8',
+            }
+            for (let i = 0; i < Object.keys(d_names).length; i += 1) {
+                let k = Object.keys(d_names)[i];
+                if (data['customized_orthokeratological_lenses'][k.toUpperCase()]) {
+                    let check_3 = document.getElementById(d_names[k]);
+                    check_3.checked = true;
+                    if (k.toUpperCase() === 'ДРУГОЕ') {
+                        let check_5 = document.getElementById('15');
+                        check_5.value = data['orthokeratological_lenses']['Другое'.toUpperCase()];
+                        check_5.style.visibility = "visible";
+                    }
+                }
+            }
+            d_names = {
+                'OKVision SMARTFIT': 'inlineRadio1',
+                'SkyOptix ZenLens': 'inlineRadio2',
+                'Нет': 'inlineRadio3',
+                'Другое': 'inlineRadio4'
+            }
+            for (let i = 0; i < Object.keys(d_names).length; i += 1) {
+                let k = Object.keys(d_names)[i];
+                console.log(k)
+                console.log(data['scleral_lenses'][k.toUpperCase()])
+                if (data['scleral_lenses'][k.toUpperCase()]) {
+                    let check_3 = document.getElementById(d_names[k]);
+                    check_3.checked = true;
+                    if (k.toUpperCase() === 'ДРУГОЕ') {
+                        let check_5 = document.getElementById('17');
+                        check_5.value = data['scleral_lenses']['Другое'.toUpperCase()];
+                        check_5.style.visibility = "visible";
+                    }
+                }
+            }
+            console.log(data)
+        });
+
+        function get_radio() {
+            let radio = document.getElementById('inlineRadio4');
+            let onclick_input = document.getElementById('17');
+            if (radio.checked) {
+                onclick_input.style.visibility = "visible";
+                onclick_input.setAttribute('required', 'true');
+            } else {
+                onclick_input.style.visibility = "hidden";
+                onclick_input.removeAttribute('required');
+            }
+        }
+
+        function get_check() {
+            let get_checkbox = document.getElementById('inline4');
+            let onclick_check = document.getElementById('14');
+            if (get_checkbox.checked) {
+                onclick_check.style.visibility = "visible";
+                onclick_check.setAttribute('required', 'true');
+            } else {
+                onclick_check.style.visibility = "hidden";
+                onclick_check.removeAttribute('required');
+            }
+        }
+
+        function get_checkbox() {
+            let get_checkbox = document.getElementById('inlineCheckbox8');
+            let onclick_check = document.getElementById('15');
+            if (get_checkbox.checked) {
+                onclick_check.style.visibility = "visible";
+                onclick_check.setAttribute('required', 'true');
+            } else {
+                onclick_check.style.visibility = "hidden";
+                onclick_check.removeAttribute('required');
+            }
+        }
+
+        function get_post() {
+            let post = document.getElementById('post_value');
+            let other = document.getElementById('value_other');
+            if (String(post.value) === String(3)) {
+                other.style.visibility = "visible";
+                other.setAttribute('required', 'true');
+            } else {
+                other.style.visibility = "hidden";
+                other.removeAttribute('required');
+            }
+        }
+    </script>
     </body>
 {% endblock %}

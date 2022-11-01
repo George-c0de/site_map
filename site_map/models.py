@@ -2,17 +2,23 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, User
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
+import re
 
 
 class Image(models.Model):
     image = models.ImageField('/', blank=True)
+
+    def __str__(self):
+        return f"{Profile.objects.get(photo_id=self.id)}"
 
     class Meta:
         verbose_name_plural = _("Изображения")
 
 
 def validate_even(value):
-    if len(value) != 11:
+    result = re.match(r'(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){1,30}(\s*)?', value)
+    print(result)
+    if result is None or len(value) > 30 or len(value) == 0:
         raise ValidationError(
             _('%(value)s is not an even number'),
             params={'value': value},
@@ -50,6 +56,9 @@ class Profile(models.Model):
                                    null=True, blank=True)
     number = models.CharField('Контактный телефон для коллег', max_length=50, validators=[validate_even])
 
+    def __str__(self):
+        return f"{self.user.email.capitalize()}"
+
     class Meta:
         verbose_name_plural = _("Пользователь")
 
@@ -58,6 +67,9 @@ class CustomizedOrthokeratologicalLenses(models.Model):
     name = models.CharField('Название', max_length=150)
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return f"Name: {self.name}, User: {self.user.user.email}"
+
     class Meta:
         verbose_name_plural = _("Кастомизированные ортокератологические линзы")
 
@@ -65,6 +77,9 @@ class CustomizedOrthokeratologicalLenses(models.Model):
 class OrthokeratologyFixedDesignLenses(models.Model):
     name = models.CharField('Название', max_length=150)
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Name: {self.name}, User: {self.user.user.email}"
 
     class Meta:
         verbose_name_plural = _("Ортокератологические линзы с фиксированным дизайном")
@@ -76,6 +91,9 @@ class Coords(models.Model):
     coords_y = models.DecimalField('Y', max_digits=17, decimal_places=15)
     filter_coords = models.CharField('Фильтр', max_length=150, default='')
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.coords_x}, {self.coords_y}, User: {self.user.user.email}"
 
     class Meta:
         verbose_name_plural = _("Координаты пользователей")

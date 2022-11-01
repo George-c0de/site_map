@@ -113,7 +113,7 @@ function init() {
                                 content: title
                             },
                             state: {
-                                selected: true
+                                selected: false
                             }
                         })
                     }),
@@ -135,6 +135,11 @@ function init() {
                     }
                 });
 
+            // console.log(listBoxControl.events.get('size'))
+            // for(let i =0; i< listBoxControl.state.size; i+=1){
+            //     console.log(listBoxControl[i])
+            //     listBoxControl[i].events.press();
+            // }
             myMap.controls.add(listBoxControl);
             // Добавим отслеживание изменения признака, выбран ли пункт списка.
             listBoxControl.events.add(['select', 'deselect'], function (e) {
@@ -160,14 +165,31 @@ function init() {
                 for (let i = 0; i < all_filters.length; i += 1) {
                     filters_all.push(ymaps.util.extend({}, all_filters[i].state.get('filters')))
                 }
+                let new_filters = {};
                 for (let i = 0; i < filters_all.length; i += 1) {
-                    objectManager.setFilter(getFilterFunction(filters_all, names))
+                    let er = false;
+                    for (let j = 0; j < Object.keys(filters_all[i]).length; j += 1) {
+                        if (filters_all[i][Object.keys(filters_all[i])[j]]) {
+                            er = true;
+                        }
+                    }
+                    if (er) {
+                        new_filters[i] = filters_all[i];
+                    }
                 }
+                objectManager.setFilter(getFilterFunction(new_filters, names))
                 //objectManager.setFilter(getFilterFunction(filters, name));
+
                 for (let el in object_all) {
                     if (objectManager.getObjectState(el)['isFilteredOut'] === false) {
                         object_arr.push(objectManager.objects.getAll()[el])
                     }
+                }
+                if (object_arr.length === 0) {
+                    object_arr = objectManager.objects.getAll();
+                    objectManager.setFilter(function (object) {
+                        return true;
+                    })
                 }
                 let data_table = document.getElementById('data_table')
                 while (data_table.firstChild) {
@@ -189,6 +211,19 @@ function init() {
                     data_table2.insertBefore(address, data_table2.firstChild);
                     data_table2.insertBefore(title, data_table2.firstChild);
                 }
+                let mySearchControl = new ymaps.control.SearchControl({
+                    options: {
+                        // Заменяем стандартный провайдер данных (геокодер) нашим собственным.
+                        provider: new CustomSearchProvider(object_arr),
+                        // Не будем показывать еще одну метку при выборе результата поиска,
+                        // т.к. метки коллекции myCollection уже добавлены на карту.
+                        noPlacemark: true,
+                        resultsPerPage: 5
+                    }
+                })
+                old_control = mySearchControl
+                myMap.controls
+                    .add(mySearchControl, {float: 'right'});
             });
         }
 
@@ -227,27 +262,15 @@ function init() {
         //     }
         // }
         // object_arr += set_filter(data['position'], objectManager, myMap, 'position', object_arr);
-        let mySearchControl = new ymaps.control.SearchControl({
-            options: {
-                // Заменяем стандартный провайдер данных (геокодер) нашим собственным.
-                provider: new CustomSearchProvider(object_arr),
-                // Не будем показывать еще одну метку при выборе результата поиска,
-                // т.к. метки коллекции myCollection уже добавлены на карту.
-                noPlacemark: true,
-                resultsPerPage: 5
-            }
-        })
-        old_control = mySearchControl
-        myMap.controls
-            .add(mySearchControl, {float: 'right'});
+
     });
 
     function getFilterFunction(categories, name) {
         return function (obj) {
             let res = []
-            for (let i = 0; i < categories.length; i += 1) {
-                let content = obj.properties.balloonContent[name[i]];
-                res.push(categories[i][content])
+            for (let i = 0; i < Object.keys(categories).length; i += 1) {
+                let content = obj.properties.balloonContent[name[Object.keys(categories)[i]]];
+                res.push(categories[Object.keys(categories)[i]][content])
             }
             let yes_or_no = true
             for (let i = 0; i < res.length; i += 1) {
