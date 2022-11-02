@@ -9,7 +9,10 @@ class Image(models.Model):
     image = models.ImageField('/', blank=True)
 
     def __str__(self):
-        return f"{Profile.objects.get(photo_id=self.id)}"
+        if Profile.objects.filter(photo_id=self.id).exists():
+            return f"{Profile.objects.get(photo_id=self.id)}"
+        else:
+            return f"name"
 
     class Meta:
         verbose_name_plural = _("Изображения")
@@ -17,7 +20,6 @@ class Image(models.Model):
 
 def validate_even(value):
     result = re.match(r'(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){1,30}(\s*)?', value)
-    print(result)
     if result is None or len(value) > 30 or len(value) == 0:
         raise ValidationError(
             _('%(value)s is not an even number'),

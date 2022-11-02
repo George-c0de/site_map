@@ -293,7 +293,22 @@ def get_coords_and_profile(request):
     return Response(data=result_end)
 
 
-def get_message(request, first_name, last_name, patronymic, image, password, email):
+def get_message(
+        request,
+        first_name,
+        last_name,
+        patronymic,
+        image,
+        password,
+        email,
+        description,
+        position,
+        specialized_training,
+        scleral_lenses,
+        orthokeratological_lenses,
+        customized_orthokeratological_lenses,
+        number
+):
     if first_name != '':
         messages.success(request, 'Имя изменено')
     if last_name != '':
@@ -312,7 +327,20 @@ def get_message(request, first_name, last_name, patronymic, image, password, ema
         messages.error(request, 'Пароль не соответствует требованиям')
     elif password != '':
         messages.success(request, 'Пароль изменен')
-
+    if description is not None:
+        messages.success(request, 'Дополнительная информация об опыте в контактной коррекции изменена')
+    if position is not None:
+        messages.success(request, 'Должность изменена')
+    if specialized_training is not None:
+        messages.success(request, 'Специализированное обучение по контактной коррекции изменено')
+    if scleral_lenses is not None:
+        messages.success(request, 'Склеральные линзы изменены')
+    if orthokeratological_lenses is not None:
+        messages.success(request, 'Ортокератологические линзы c фиксированным дизайном изменены')
+    if customized_orthokeratological_lenses is not None:
+        messages.success(request, 'Кастомизированные ортокератологические линзы изменены')
+    if number is not None:
+        messages.success(request, 'Номер телефона изменен')
     return messages
 
 
@@ -367,45 +395,25 @@ def lk(request):
             password = change_password(user, data_user['password'])
             email = change_email(user, data_user['email'])
             change_yes_or_no(data, profile)
-            profile.description = data['description']
-            profile.position = data['position']
-            profile.specialized_training = data['specialized_training']
-            if data.get('scleral_lenses', False):
-                scleral_lenses = data['scleral_lenses'].capitalize()
-                if str(scleral_lenses).upper() == 'ДРУГОЕ':
-                    scleral_lenses = data.get('other_scleral_lenses', None)
-                    if scleral_lenses is not None:
-                        scleral_lenses = scleral_lenses.capitalize()
-            else:
-                scleral_lenses = None
-            profile.scleral_lenses = scleral_lenses
+            description = change_description(data['description'], profile)
+            position = change_position(data['position'], profile)
+            specialized_training = change_specialized_training(data['specialized_training'], profile)
+            scleral_lenses = change_scleral_lenses(data, profile)
+            number = change_number(data['number'], profile)
             orthokeratological_lenses = choice_orthokeratological_lenses(data)
-            if orthokeratological_lenses is not None:
-                for el in orthokeratological_lenses:
-                    orthokeratological_lenses_data = {
-                        'name': el.capitalize(),
-                        'user': profile
-                    }
-                    form_orthokeratology = CreateOrthokeratologyFixedDesignLensesForm(
-                        orthokeratological_lenses_data)
-                    if form_orthokeratology.is_valid():
-                        form_orthokeratology.save()
+            change_and_save_orthokeratological_lenses(orthokeratological_lenses, profile)
 
             customized_orthokeratological_lenses = choice_customized_orthokeratological_lenses(data)
-            if customized_orthokeratological_lenses is not None:
-                for el in customized_orthokeratological_lenses:
-                    customized_orthokeratological_lenses_data = {
-                        'name': el.capitalize(),
-                        'user': profile
-                    }
-                    form_customized = CreateCustomizedOrthokeratologicalLensesForm(
-                        customized_orthokeratological_lenses_data)
-                    if form_customized.is_valid():
-                        form_customized.save()
-            profile.save()
-            get_message(request=request, first_name=first_name, last_name=last_name, image=image, patronymic=patronymic,
-                        password=password, email=email)
+            change_and_save(customized_orthokeratological_lenses, profile)
 
+            get_message(request=request, first_name=first_name, last_name=last_name, image=image, patronymic=patronymic,
+                        password=password, email=email, description=description,
+                        position=position, specialized_training=specialized_training,
+                        scleral_lenses=scleral_lenses,
+                        customized_orthokeratological_lenses=customized_orthokeratological_lenses,
+                        orthokeratological_lenses=orthokeratological_lenses,
+                        number=number,
+                        )
             if password != '':
                 return redirect(request.META.get('HTTP_REFERER', 'redirect_if_referer_not_found'))
 
@@ -418,6 +426,66 @@ def lk(request):
         return render(request, 'site_map/personal_area.html', context=context)
     else:
         return redirect('login')
+
+
+def change_number(number, profile):
+    try:
+        validate_even(number)
+        profile.number = number
+        profile.save()
+        return True
+    except Exception as e:
+        print(e)
+    finally:
+        return None
+
+
+def change_description(description, profile):
+    des = profile.description
+    if des == description:
+        return None
+    else:
+        profile.description = description
+        profile.save()
+        return True
+
+
+def change_position(position, profile):
+    pos = profile.position
+    if pos == position:
+        return None
+    else:
+        profile.position = position
+        profile.save()
+        return True
+
+
+def change_specialized_training(specialized_training, profile):
+    spec = profile.specialized_training
+    if spec == specialized_training:
+        return None
+    else:
+        profile.specialized_training = specialized_training
+        profile.save()
+        return True
+
+
+def change_scleral_lenses(data, profile=None):
+    if data.get('scleral_lenses', False):
+        scleral_lenses = data['scleral_lenses'].capitalize()
+        if str(scleral_lenses).upper() == 'ДРУГОЕ':
+            scleral_lenses = data.get('other_scleral_lenses', None)
+            if scleral_lenses is not None:
+                scleral_lenses = scleral_lenses.capitalize()
+    else:
+        scleral_lenses = None
+    if profile is None:
+        return scleral_lenses
+    if profile.scleral_lenses.upper() == scleral_lenses.upper():
+        return None
+    profile.scleral_lenses = scleral_lenses
+    profile.save()
+    return scleral_lenses
 
 
 def change_yes_or_no(data, profile):
@@ -451,9 +519,7 @@ def get_info_lk(request):
                                                       'Paragon CRT', 'нет']
         customized_orthokeratological_lenses_names = list(
             map(lambda x: x.upper(), customized_orthokeratological_lenses_names))
-        customized_orthokeratological_lenses = {
-
-        }
+        customized_orthokeratological_lenses = {}
         for el in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
             if el.name.upper() in customized_orthokeratological_lenses_names:
                 customized_orthokeratological_lenses[el.name.upper()] = True
@@ -675,10 +741,86 @@ def choice_customized_orthokeratological_lenses(data):
     if data.get('customized_orthokeratological_lenses_2', False):
         customized_orthokeratological_lenses.append(data['customized_orthokeratological_lenses_2'])
     if data.get('customized_orthokeratological_lenses_3', False):
-        return None
+        customized_orthokeratological_lenses.append(data['customized_orthokeratological_lenses_3'])
     if data.get('customized_orthokeratological_lenses_4', False):
+        customized_orthokeratological_lenses.append(data['customized_orthokeratological_lenses_4'])
+    if data.get('customized_orthokeratological_lenses_5', False):
+        customized_orthokeratological_lenses.append(data['customized_orthokeratological_lenses_5'])
+    if data.get('customized_orthokeratological_lenses_6', False):
+        customized_orthokeratological_lenses.append(data['customized_orthokeratological_lenses_6'])
+    if data.get('customized_orthokeratological_lenses_7', False):
+        return None
+    if data.get('customized_orthokeratological_lenses_8', False):
         customized_orthokeratological_lenses.append(data['other_customized_orthokeratological_lenses'])
     return customized_orthokeratological_lenses
+
+
+def change_and_save(customized_orthokeratological_lenses, profile):
+    if customized_orthokeratological_lenses is not None:
+        names = {}
+        for el in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
+            names[el.name.upper()] = el
+        save_customized_orthokeratological_lenses = []
+        for el in customized_orthokeratological_lenses:
+            orthokeratological_lenses_data = {
+                'name': el.capitalize(),
+                'user': profile
+            }
+            save_customized_orthokeratological_lenses.append(orthokeratological_lenses_data)
+        for el in range(0, len(save_customized_orthokeratological_lenses)):
+            if save_customized_orthokeratological_lenses[el]['name'] in names.keys():
+                save_customized_orthokeratological_lenses.pop(el)
+        for el in names.keys():
+            if names[el] not in save_customized_orthokeratological_lenses:
+                names[el].delete()
+        for el in save_customized_orthokeratological_lenses:
+            form_custom = CreateCustomizedOrthokeratologicalLensesForm(el)
+            if form_custom.is_valid():
+                form_custom.save()
+    else:
+        for el in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
+            el.delete()
+        form_custom = CreateCustomizedOrthokeratologicalLensesForm({
+            'name': 'нет'.capitalize(),
+            'user': profile
+        })
+        if form_custom.is_valid():
+            form_custom.save()
+
+
+def change_and_save_orthokeratological_lenses(orthokeratological_lenses, profile):
+    if orthokeratological_lenses is not None:
+        profile_orthokeratological_lenses = OrthokeratologyFixedDesignLenses.objects.filter(user=profile)
+        names = {}
+        for el in profile_orthokeratological_lenses:
+            names[el.name.upper()] = el
+        save_orthokeratological_lenses = []
+        for el in orthokeratological_lenses:
+            orthokeratological_lenses_data = {
+                'name': el.capitalize(),
+                'user': profile
+            }
+            save_orthokeratological_lenses.append(orthokeratological_lenses_data)
+        for el in range(0, len(save_orthokeratological_lenses)):
+            if save_orthokeratological_lenses[el]['name'] in names.keys():
+                save_orthokeratological_lenses.pop(el)
+        for el in names.keys():
+            if names[el] not in save_orthokeratological_lenses:
+                names[el].delete()
+
+        for el in save_orthokeratological_lenses:
+            form_orthokeratology = CreateOrthokeratologyFixedDesignLensesForm(el)
+            if form_orthokeratology.is_valid():
+                form_orthokeratology.save()
+    else:
+        for el in OrthokeratologyFixedDesignLenses.objects.filter(user=profile):
+            el.delete()
+        form_orthokeratology = CreateOrthokeratologyFixedDesignLensesForm({
+            'name': 'нет'.capitalize(),
+            'user': profile
+        })
+        if form_orthokeratology.is_valid():
+            form_orthokeratology.save()
 
 
 def choice_orthokeratological_lenses(data):
@@ -688,15 +830,7 @@ def choice_orthokeratological_lenses(data):
     if data.get('orthokeratological_lenses_2', False):
         orthokeratological_lenses.append(data['orthokeratological_lenses_2'])
     if data.get('orthokeratological_lenses_3', False):
-        orthokeratological_lenses.append(data['orthokeratological_lenses_3'])
-    if data.get('orthokeratological_lenses_4', False):
-        orthokeratological_lenses.append(data['orthokeratological_lenses_4'])
-    if data.get('orthokeratological_lenses_5', False):
-        orthokeratological_lenses.append(data['orthokeratological_lenses_5'])
-    if data.get('orthokeratological_lenses_6', False):
-        orthokeratological_lenses.append(data['orthokeratological_lenses_6'])
-    if data.get('orthokeratological_lenses_7', False):
         return None
-    if data.get('orthokeratological_lenses_8', False):
+    if data.get('orthokeratological_lenses_4', False):
         orthokeratological_lenses.append(data['other_orthokeratological_lenses'])
     return orthokeratological_lenses
