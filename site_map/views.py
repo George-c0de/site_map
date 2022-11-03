@@ -832,5 +832,13 @@ def choice_orthokeratological_lenses(data):
     if data.get('orthokeratological_lenses_3', False):
         return None
     if data.get('orthokeratological_lenses_4', False):
+        orthokeratological_lenses.append(data['orthokeratological_lenses_4'])
+    if data.get('orthokeratological_lenses_5', False):
+        orthokeratological_lenses.append(data['orthokeratological_lenses_5'])
+    if data.get('orthokeratological_lenses_6', False):
+        orthokeratological_lenses.append(data['orthokeratological_lenses_6'])
+    if data.get('orthokeratological_lenses_7', False):
+        orthokeratological_lenses.append(data['orthokeratological_lenses_7'])
+    if data.get('orthokeratological_lenses_8', False):
         orthokeratological_lenses.append(data['other_orthokeratological_lenses'])
     return orthokeratological_lenses
