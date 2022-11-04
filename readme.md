@@ -8,7 +8,7 @@
     * [Тесты](#тесты)
     * [Рассылка](#рассылка)
 * [Настройка](#Настройка)
-    * [Файл env](#Файл env)
+    * [Файл env](#env)
     * [Миграции](#Миграции)
     * [БД PostgresSQL](#PostgresSQL)
 
@@ -28,12 +28,13 @@
 
 #### Домашняя страница
 
-<img src="media\home-page.svg" height="400" alt="Главная страница" width="400" title="Главная страница">
+<img src="media\home-page.svg" width="1920" height="400" alt="Главная страница"  title="Главная страница">
 
 #### Личный кабинет
 
-<img src="media\lk1.svg" width="400" height="400" title="Личный кабинет" alt="Личный кабинет">
-<img src="media\lk2.svg" width="400" height="400" title="Личный кабинет" alt="Личный кабинет">
+<img src="media\lk1.svg" width="1920" height="400" title="Личный кабинет" alt="Личный кабинет">
+<br>
+<img src="media\lk2.svg" width="1920" height="400" title="Личный кабинет" alt="Личный кабинет">
 
 ## Технологии
 
@@ -110,7 +111,7 @@ USER - Пользователь
 PASSWORD - Пароль
 PORT - Порт(default 5432)
 
-### Файл env
+### env
 
 Чтобы запустить проект, нужно добавить в корневую директорию файл env, который должен содержать 6 полей:
 
