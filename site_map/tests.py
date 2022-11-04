@@ -1,16 +1,51 @@
-import json
-
-from django.test import TestCase
-
-from rest_framework.test import force_authenticate, APITestCase
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APITestCase
 from django.urls import reverse
-from rest_framework import status
 
 from site_map.models import Profile
 
 
 class AccountTests(APITestCase):
+    def test_add_profile(self):
+        data_user = {
+            'username': 'email@yandex.ru',
+            'email': 'email@yandex.ru',
+            'password1': '12345678QWER',
+            'password2': '12345678QWER',
+            'first_name': '',
+            'last_name': '',
+            'image': None,
+            'patronymic': '',
+            'position': 'Офт',
+            'specialized_training': '2',
+            'standard_soft': 'YES',
+            'standard_soft_for_myopia': 'YES',
+            'customized_soft_contact_lenses': 'YES',
+            'soft_contact_lenses_for_keratoconus': 'YES',
+            'corneal_rigid': 'YES',
+            'description': 'other',
+            'number': '1234567890987654321234567890987654321234',
+            'orthokeratological_lenses_1': 'Contex',
+            'customized_orthokeratological_lenses_1': 'RGP Designer',
+            'scleral_lenses': 'OKVision SMARTFIT'
+        }
+        url = reverse('register')
+        # Создание пользователя с номеров больше 30
+        self.client.post(url, data_user, format='json')
+        self.assertEqual(Profile.objects.count(), 0)
+        print('OK')
+        data_user['number'] = '+76878'
+        data_user['password1'] = '123'
+        data_user['password2'] = '123'
+        # Создание с некорректным паролем
+        self.client.post(url, data_user, format='json')
+        self.assertEqual(Profile.objects.count(), 0)
+        print('OK')
+        data_user['standard_soft'] = 'Неверный выбор'
+        # Создание с неверным выбором
+        self.client.post(url, data_user, format='json')
+        self.assertEqual(Profile.objects.count(), 0)
+        print('OK')
+
     def test_create_account(self):
         data_user = {
             'username': 'email@yandex.ru',
@@ -35,9 +70,10 @@ class AccountTests(APITestCase):
             'scleral_lenses': 'OKVision SMARTFIT'
         }
         url = reverse('register')
-        request = self.client.post(url, data_user, format='json')
+        self.client.post(url, data_user, format='json')
         self.assertEqual(Profile.objects.count(), 1)
         self.assertEqual(Profile.objects.get().user.email, 'email@yandex.ru')
+        print('OK! Create User')
         self.add_coords()
         self.get_coords()
 
@@ -52,7 +88,6 @@ class AccountTests(APITestCase):
         self.client.post(url, data, follow='json')
 
     def get_coords(self):
-        profile = Profile.objects.get()
         url = reverse('get_coords_and_profile')
         requests = self.client.get(url)
         data = requests.data['features'][0]['geometry']['coordinates']

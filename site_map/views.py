@@ -708,8 +708,8 @@ def register_page(request):
                         profile = Profile.objects.get(user_id=user.id)
                     else:
                         delete_all(user, image)
-                        render(request, 'site_map/register.html', status=status.HTTP_400_BAD_REQUEST,
-                               context={'YANDEX_MAP': YANDEX_MAP})
+                        return render(request, 'site_map/register.html', status=status.HTTP_400_BAD_REQUEST,
+                                      context={'YANDEX_MAP': YANDEX_MAP})
                     orthokeratological_lenses = choice_orthokeratological_lenses(data)
                     if orthokeratological_lenses is not None:
                         for el in orthokeratological_lenses:
@@ -740,8 +740,8 @@ def register_page(request):
                 except BaseException as e:
                     print(e)
                     delete_all(user, image, profile)
-                    render(request, 'site_map/register.html', status=status.HTTP_400_BAD_REQUEST,
-                           context={'YANDEX_MAP': YANDEX_MAP})
+                    return render(request, 'site_map/register.html', status=status.HTTP_400_BAD_REQUEST,
+                                  context={'YANDEX_MAP': YANDEX_MAP})
             else:
                 for count, value in enumerate(form.errors, start=0):
                     if value == 'username':
