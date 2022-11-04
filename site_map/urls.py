@@ -8,7 +8,7 @@ urlpatterns = [
                   path('logout', views.logout_user, name='logout'),
                   path('register', views.register_page, name='register'),
                   path('', views.home_page, name='home'),
-                  path('get_coords_and_profile', views.get_coords_and_profile),
+                  path('get_coords_and_profile', views.get_coords_and_profile, name='get_coords_and_profile'),
                   path('lk', views.lk, name='lk'),
                   path('get_filter', views.get_filter),
                   path('add_coords', views.add_coords, name='add_coords'),

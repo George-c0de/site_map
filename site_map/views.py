@@ -9,11 +9,12 @@ from django.contrib.auth import authenticate, login, logout
 import json
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from project.settings import env
+from project.settings import env, YANDEX_MAP
 from .forms import *
 from .models import *
 import logging
 import re
+from rest_framework import status
 
 # Лог выводим на экран и в файл
 logging.basicConfig(
@@ -171,7 +172,7 @@ class DecimalEncoder(json.JSONEncoder):
 def get_filter(request):
     """
     :param request:
-    :return: Возвращает список для фильтрации данных на карте(По населенному пункту)
+    :return: Возвращает список для фильтрации данных на карте
     """
     coords = Coords.objects.all()
     result_end = {
@@ -431,7 +432,8 @@ def lk(request):
             'user': profile,
             'auth': request.user.is_authenticated,
             'coords': Coords.objects.filter(user=Profile.objects.get(user=user)),
-            'customized_orthokeratological_lenses': CustomizedOrthokeratologicalLenses.objects.filter(user=profile)
+            'customized_orthokeratological_lenses': CustomizedOrthokeratologicalLenses.objects.filter(user=profile),
+            'YANDEX_MAP': YANDEX_MAP
         }
         return render(request, 'site_map/personal_area.html', context=context)
     else:
@@ -481,14 +483,7 @@ def change_specialized_training(specialized_training, profile):
 
 
 def change_scleral_lenses(data, profile=None):
-    if data.get('scleral_lenses', False):
-        scleral_lenses = data['scleral_lenses'].capitalize()
-        if str(scleral_lenses).upper() == 'ДРУГОЕ':
-            scleral_lenses = data.get('other_scleral_lenses', None)
-            if scleral_lenses is not None:
-                scleral_lenses = scleral_lenses.capitalize()
-    else:
-        scleral_lenses = None
+    scleral_lenses = get_scleral_lenses(data)
     if profile is None:
         return scleral_lenses
     if profile.scleral_lenses.upper() == scleral_lenses.upper():
@@ -569,7 +564,8 @@ def home_page(request):
         })
     context = {
         'auth': request.user.is_authenticated,
-        'table_data': table_data
+        'table_data': table_data,
+        'YANDEX_MAP': YANDEX_MAP
     }
     return render(request, 'site_map/home.html', context=context)
 
@@ -582,7 +578,7 @@ def send_message(
         email_user=None
 ):
     api = SendsayAPI(login=login_sendsay, password=password)
-    response = api.request('issue.send', {
+    api.request('issue.send', {
         'sendwhen': 'now',
         'letter': {
             'subject': "Регистрация",
@@ -600,7 +596,7 @@ def send_message(
 
 
 def add_coords(request):
-    return render(request, 'site_map/add_coords.html')
+    return render(request, 'site_map/add_coords.html', context={'YANDEX_MAP': YANDEX_MAP})
 
 
 @csrf_exempt
@@ -641,30 +637,42 @@ def add_coord(request):
         return JsonResponse({'error': 'Some error'}, status=200)
 
 
+def get_scleral_lenses(data):
+    if data.get('scleral_lenses', False):
+        scleral_lenses = data['scleral_lenses'].capitalize()
+        if str(scleral_lenses).upper() == 'ДРУГОЕ':
+            scleral_lenses = data.get('other_scleral_lenses', None)
+            if scleral_lenses is not None:
+                scleral_lenses = scleral_lenses.capitalize()
+    else:
+        scleral_lenses = None
+    return scleral_lenses
+
+
 @api_view(['GET', 'POST'])
 def register_page(request):
     if request.user.is_authenticated:
         return redirect('home')
     else:
         if request.method == 'POST':
+            data = request.data
             register_user = {
-                'username': request.POST.get('email'),
-                'email': request.POST.get('email'),
-                'password1': request.POST.get('password1'),
-                'password2': request.POST.get('password2'),
-                'first_name': request.POST.get('first_name'),
-                'last_name': request.POST.get('last_name'),
+                'username': data['email'],
+                'email': data['email'],
+                'password1': data['password1'],
+                'password2': data['password2'],
+                'first_name': data['first_name'],
+                'last_name': data['last_name'],
             }
             form = CreateUserForm(register_user)
             if form.is_valid():
                 form.save()
                 user, image, profile = None, None, None
                 try:
-                    user = User.objects.get(username=request.POST.get('email'))
+                    user = User.objects.get(username=data['email'])
                     temp_image = request.FILES.get('image')
                     image = Image.objects.create(image=temp_image)
-                    patronymic = request.POST.get('patronymic')
-                    data = request.data
+                    patronymic = data['patronymic']
                     if data['position'] == str(3):
                         position = data['other_position']
                     else:
@@ -677,14 +685,7 @@ def register_page(request):
                     corneal_rigid = data['corneal_rigid']
                     description = data['description']
                     number = data['number']
-                    if data.get('scleral_lenses', False):
-                        scleral_lenses = data['scleral_lenses'].capitalize()
-                        if str(scleral_lenses).upper() == 'ДРУГОЕ':
-                            scleral_lenses = data.get('other_scleral_lenses', None)
-                            if scleral_lenses is not None:
-                                scleral_lenses = scleral_lenses.capitalize()
-                    else:
-                        scleral_lenses = None
+                    scleral_lenses = get_scleral_lenses(data)
                     profile_data = {
                         'user': user,
                         'patronymic': patronymic,
@@ -703,10 +704,12 @@ def register_page(request):
                     form_profile = CreateProfileForm(profile_data)
                     if form_profile.is_valid():
                         form_profile.save()
-                        send_message(password_user=request.POST.get('password1'), email_user=request.POST.get('email'))
+                        send_message(password_user=data['password1'], email_user=data['email'])
                         profile = Profile.objects.get(user_id=user.id)
                     else:
                         delete_all(user, image)
+                        render(request, 'site_map/register.html', status=status.HTTP_400_BAD_REQUEST,
+                               context={'YANDEX_MAP': YANDEX_MAP})
                     orthokeratological_lenses = choice_orthokeratological_lenses(data)
                     if orthokeratological_lenses is not None:
                         for el in orthokeratological_lenses:
@@ -737,6 +740,8 @@ def register_page(request):
                 except BaseException as e:
                     print(e)
                     delete_all(user, image, profile)
+                    render(request, 'site_map/register.html', status=status.HTTP_400_BAD_REQUEST,
+                           context={'YANDEX_MAP': YANDEX_MAP})
             else:
                 for count, value in enumerate(form.errors, start=0):
                     if value == 'username':
@@ -746,8 +751,9 @@ def register_page(request):
                     elif value == 'password1':
                         messages.error(request, 'Пароль не соответствует требованиям\n')
                 # messages.error(request, form.errors)
-                return render(request, 'site_map/register.html')
-        return render(request, 'site_map/register.html')
+                return render(request, 'site_map/register.html', status=status.HTTP_400_BAD_REQUEST,
+                              context={'YANDEX_MAP': YANDEX_MAP})
+        return render(request, 'site_map/register.html', context={'YANDEX_MAP': YANDEX_MAP})
 
 
 def choice_customized_orthokeratological_lenses(data):
