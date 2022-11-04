@@ -516,7 +516,6 @@ def get_custom_or_orthokeratological(model, names, profile):
     result = {}
     names = list(map(lambda x: x.upper(), names))
     other = 'Другое'.upper()
-    print(model.objects.all())
     for el in model.objects.filter(user=profile):
         if el.name.upper() in names:
             result[el.name.upper()] = True
@@ -531,15 +530,6 @@ def get_info_lk(request):
     if request.user.is_authenticated:
         user = request.user
         profile = Profile.objects.get(user=user)
-        # customized_orthokeratological_lenses_names = ['RGP Designer', 'OrthoTool', 'Нет']
-        # customized_orthokeratological_lenses_names = list(
-        #     map(lambda x: x.upper(), customized_orthokeratological_lenses_names))
-        # customized_orthokeratological_lenses = {}
-        # for el in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
-        #     if el.name.upper() in customized_orthokeratological_lenses_names:
-        #         customized_orthokeratological_lenses[el.name.upper()] = True
-        #     else:
-        #         customized_orthokeratological_lenses['Другое'.upper()] = el.name.upper()
 
         customized_orthokeratological_lenses = get_custom_or_orthokeratological(
             model=CustomizedOrthokeratologicalLenses,
@@ -550,17 +540,6 @@ def get_info_lk(request):
             model=OrthokeratologyFixedDesignLenses,
             names=['Contex', 'DL-ESA', 'Emerald', 'MoonLens', 'OKVision', 'Paragon CRT', 'нет'],
             profile=profile)
-
-        # customized_orthokeratological_lenses_names = ['Contex', 'DL-ESA', 'Emerald', 'MoonLens', 'OKVision',
-        #                                               'Paragon CRT', 'нет']
-        # customized_orthokeratological_lenses_names = list(
-        #     map(lambda x: x.upper(), customized_orthokeratological_lenses_names))
-        # customized_orthokeratological_lenses = {}
-        # for el in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
-        #     if el.name.upper() in customized_orthokeratological_lenses_names:
-        #         customized_orthokeratological_lenses[el.name.upper()] = True
-        #     else:
-        #         customized_orthokeratological_lenses['Другое'.upper()] = el.name.upper()
 
         scleral_lenses = {}
         if Profile.objects.get(user=request.user).scleral_lenses.upper() not in list(
@@ -790,7 +769,6 @@ def change_and_save_lenses(lenses_names, model, profile, form):
         profile_lenses = model.objects.filter(user=profile)
         delete_id = []
         save_lenses = []
-        names = []
 
         for el in profile_lenses:
             if el.name.upper() not in lenses_names:
@@ -822,80 +800,6 @@ def change_and_save_lenses(lenses_names, model, profile, form):
         })
         if form_lenses.is_valid():
             form_lenses.save()
-
-
-def change_and_save(customized_orthokeratological_lenses, profile):
-    if customized_orthokeratological_lenses is not None:
-        names = {}
-        for el in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
-            names[el.name.upper()] = el
-        save_customized_orthokeratological_lenses = []
-        for el in customized_orthokeratological_lenses:
-            orthokeratological_lenses_data = {
-                'name': el.capitalize(),
-                'user': profile
-            }
-            save_customized_orthokeratological_lenses.append(orthokeratological_lenses_data)
-        for el in range(0, len(save_customized_orthokeratological_lenses)):
-            if save_customized_orthokeratological_lenses[el]['name'] in names.keys():
-                save_customized_orthokeratological_lenses.pop(el)
-        for el in names.keys():
-            if names[el] not in save_customized_orthokeratological_lenses:
-                names[el].delete()
-        for el in save_customized_orthokeratological_lenses:
-            form_custom = CreateCustomizedOrthokeratologicalLensesForm(el)
-            if form_custom.is_valid():
-                form_custom.save()
-    else:
-        for el in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
-            el.delete()
-        form_custom = CreateCustomizedOrthokeratologicalLensesForm({
-            'name': 'нет'.capitalize(),
-            'user': profile
-        })
-        if form_custom.is_valid():
-            form_custom.save()
-
-
-def change_and_save_orthokeratological_lenses(orthokeratological_lenses, profile):
-    if orthokeratological_lenses is not None:
-        profile_orthokeratological_lenses = OrthokeratologyFixedDesignLenses.objects.filter(user=profile)
-        names = {}
-        for el in profile_orthokeratological_lenses:
-            names[el.name.upper()] = el
-        save_orthokeratological_lenses = []
-        for el in orthokeratological_lenses:
-            orthokeratological_lenses_data = {
-                'name': el.upper(),
-                'user': profile
-            }
-            save_orthokeratological_lenses.append(orthokeratological_lenses_data)
-        delete_id = []
-        for el in range(0, len(save_orthokeratological_lenses)):
-            if save_orthokeratological_lenses[el]['name'] in names.keys():
-                delete_id.append(el)
-        delete_id.reverse()
-        for el in delete_id:
-            save_orthokeratological_lenses.pop(el)
-        if len(save_orthokeratological_lenses) == 0:
-            return None
-        for el in names.keys():
-            if names[el] not in save_orthokeratological_lenses:
-                names[el].delete()
-
-        for el in save_orthokeratological_lenses:
-            form_orthokeratology = CreateOrthokeratologyFixedDesignLensesForm(el)
-            if form_orthokeratology.is_valid():
-                form_orthokeratology.save()
-    else:
-        for el in OrthokeratologyFixedDesignLenses.objects.filter(user=profile):
-            el.delete()
-        form_orthokeratology = CreateOrthokeratologyFixedDesignLensesForm({
-            'name': 'нет'.capitalize(),
-            'user': profile
-        })
-        if form_orthokeratology.is_valid():
-            form_orthokeratology.save()
 
 
 def choice_orthokeratological_lenses(data):
