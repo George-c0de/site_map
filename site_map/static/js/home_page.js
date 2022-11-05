@@ -134,12 +134,6 @@ function init() {
                         filters: listBoxItems.reduce(reducer, {})
                     }
                 });
-
-            // console.log(listBoxControl.events.get('size'))
-            // for(let i =0; i< listBoxControl.state.size; i+=1){
-            //     console.log(listBoxControl[i])
-            //     listBoxControl[i].events.press();
-            // }
             myMap.controls.add(listBoxControl);
             // Добавим отслеживание изменения признака, выбран ли пункт списка.
             listBoxControl.events.add(['select', 'deselect'], function (e) {
@@ -252,16 +246,6 @@ function init() {
         set_monitor(listBoxControl8, names)
         set_monitor(listBoxControl9, names)
         set_monitor(listBoxControl10, names)
-        // let object_arr2 = set_filter(data['position'], objectManager, myMap, 'position', object_arr);
-        // let all = []
-        // for (let i = 0; i < object_arr.length; i += 1) {
-        //     for (let j = 0; j < object_arr2.length; j += 1) {
-        //         if (object_arr[i] === object_arr2[j]) {
-        //             all.push(object_arr[i]);
-        //         }
-        //     }
-        // }
-        // object_arr += set_filter(data['position'], objectManager, myMap, 'position', object_arr);
 
     });
 
@@ -270,7 +254,18 @@ function init() {
             let res = []
             for (let i = 0; i < Object.keys(categories).length; i += 1) {
                 let content = obj.properties.balloonContent[name[Object.keys(categories)[i]]];
-                res.push(categories[Object.keys(categories)[i]][content])
+                let yes_or_no = false
+                if (typeof content == 'object') {
+                    for (let j = 0; j < content.length; j += 1) {
+                        if (categories[Object.keys(categories)[i]][content[j]] === true) {
+                            yes_or_no = true
+                        }
+                    }
+                    res.push(yes_or_no)
+                }
+                else{
+                    res.push(categories[Object.keys(categories)[i]][content])
+                }
             }
             let yes_or_no = true
             for (let i = 0; i < res.length; i += 1) {

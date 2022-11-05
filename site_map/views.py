@@ -205,8 +205,12 @@ def get_filter(request):
                 profile.soft_contact_lenses_for_keratoconus.upper())
         if profile.corneal_rigid.upper() not in result_end['corneal_rigid']:
             result_end['corneal_rigid'].append(profile.corneal_rigid.upper())
-        if profile.scleral_lenses.capitalize() not in result_end['scleral_lenses']:
-            result_end['scleral_lenses'].append(profile.scleral_lenses.capitalize())
+
+        orthokeratological_lenses = ScleralLenses.objects.filter(user=profile)
+
+        for lenses in orthokeratological_lenses:
+            if lenses.name.capitalize() not in result_end['scleral_lenses']:
+                result_end['scleral_lenses'].append(lenses.name.capitalize())
 
         orthokeratological_lenses = OrthokeratologyFixedDesignLenses.objects.filter(user=profile)
         for lenses in orthokeratological_lenses:
@@ -245,14 +249,19 @@ def get_coords_and_profile(request):
                 }
             }
         }
+        all_scleral_lenses = ScleralLenses.objects.filter(user=profile)
+        scleral_lenses = []
+        for le in all_scleral_lenses:
+            scleral_lenses.append(le.name.capitalize())
         all_orthokeratological_lenses = OrthokeratologyFixedDesignLenses.objects.filter(user=profile)
+
         orthokeratological_lenses = []
         for le in all_orthokeratological_lenses:
-            orthokeratological_lenses.append(le.name)
+            orthokeratological_lenses.append(le.name.capitalize())
         all_customized_orthokeratological_lenses = CustomizedOrthokeratologicalLenses.objects.filter(user=profile)
         customized_orthokeratological_lenses = []
         for cust in all_customized_orthokeratological_lenses:
-            customized_orthokeratological_lenses.append(cust.name)
+            customized_orthokeratological_lenses.append(cust.name.capitalize())
         filters = {
             'position': profile.position,
             'standard_soft': profile.standard_soft,
@@ -260,7 +269,7 @@ def get_coords_and_profile(request):
             'customized_soft_contact_lenses': profile.customized_soft_contact_lenses,
             'soft_contact_lenses_for_keratoconus': profile.soft_contact_lenses_for_keratoconus,
             'corneal_rigid': profile.corneal_rigid,
-            'scleral_lenses': profile.scleral_lenses.capitalize(),
+            'scleral_lenses': scleral_lenses,
             'orthokeratological_lenses': orthokeratological_lenses,
             'customized_orthokeratological_lenses': customized_orthokeratological_lenses,
             'city': el.filter_coords.capitalize()
@@ -384,9 +393,7 @@ def lk(request):
                 'corneal_rigid': data['corneal_rigid'],
 
                 'description': data['description'],
-                'number': data['number'],
-
-                'scleral_lenses': data['scleral_lenses'],
+                'number': data['number']
             }
             image = save_or_change_image(user=profile, image=data_user['image'])
             first_name = change_first_name(user=user, name=data_user['first_name'])
@@ -398,7 +405,13 @@ def lk(request):
             description = change_description(data['description'], profile)
             position = change_position(data['position'], profile)
             specialized_training = change_specialized_training(data['specialized_training'], profile)
-            scleral_lenses = change_scleral_lenses(data, profile)
+            # scleral_lenses = change_scleral_lenses(data, profile)
+            scleral_lenses = get_scleral_lenses(data)
+            change_and_save_lenses(
+                lenses_names=scleral_lenses,
+                model=ScleralLenses,
+                profile=profile,
+                form=CreateScleralLensesForm)
             number = change_number(data['number'], profile)
 
             orthokeratological_lenses = choice_orthokeratological_lenses(data)
@@ -482,17 +495,6 @@ def change_specialized_training(specialized_training, profile):
         return True
 
 
-def change_scleral_lenses(data, profile=None):
-    scleral_lenses = get_scleral_lenses(data)
-    if profile is None:
-        return scleral_lenses
-    if profile.scleral_lenses.upper() == scleral_lenses.upper():
-        return None
-    profile.scleral_lenses = scleral_lenses
-    profile.save()
-    return scleral_lenses
-
-
 def change_yes_or_no(data, profile):
     if data['standard_soft'] != str(0):
         profile.standard_soft = data['standard_soft']
@@ -535,13 +537,10 @@ def get_info_lk(request):
             model=OrthokeratologyFixedDesignLenses,
             names=['Contex', 'DL-ESA', 'Emerald', 'MoonLens', 'OKVision', 'Paragon CRT', 'нет'],
             profile=profile)
-
-        scleral_lenses = {}
-        if Profile.objects.get(user=request.user).scleral_lenses.upper() not in list(
-                map(lambda x: x.upper(), ['OKVision SMARTFIT', 'SkyOptix ZenLens', 'Нет'])):
-            scleral_lenses['ДРУГОЕ'] = Profile.objects.get(user=request.user).scleral_lenses.upper()
-        else:
-            scleral_lenses[Profile.objects.get(user=request.user).scleral_lenses.upper()] = True
+        scleral_lenses = get_custom_or_orthokeratological(
+            model=ScleralLenses,
+            names=['OKVision SMARTFIT', 'SkyOptix ZenLens', 'Нет'],
+            profile=profile)
         data = {
             'auth': request.user.is_authenticated,
             'orthokeratological_lenses': orthokeratological_lenses,
@@ -638,14 +637,15 @@ def add_coord(request):
 
 
 def get_scleral_lenses(data):
-    if data.get('scleral_lenses', False):
-        scleral_lenses = data['scleral_lenses'].capitalize()
-        if str(scleral_lenses).upper() == 'ДРУГОЕ':
-            scleral_lenses = data.get('other_scleral_lenses', None)
-            if scleral_lenses is not None:
-                scleral_lenses = scleral_lenses.capitalize()
-    else:
-        scleral_lenses = None
+    scleral_lenses = []
+    if data.get('scleral_lenses_1', False):
+        scleral_lenses.append(data['scleral_lenses_1'])
+    if data.get('scleral_lenses_2', False):
+        scleral_lenses.append(data['scleral_lenses_2'])
+    if data.get('scleral_lenses_3', False):
+        return None
+    if data.get('scleral_lenses_4', False):
+        scleral_lenses.append(data['other_scleral_lenses'])
     return scleral_lenses
 
 
@@ -685,7 +685,6 @@ def register_page(request):
                     corneal_rigid = data['corneal_rigid']
                     description = data['description']
                     number = data['number']
-                    scleral_lenses = get_scleral_lenses(data)
                     profile_data = {
                         'user': user,
                         'patronymic': patronymic,
@@ -699,7 +698,6 @@ def register_page(request):
                         'corneal_rigid': corneal_rigid.upper(),
                         'description': description.capitalize(),
                         'number': number,
-                        'scleral_lenses': scleral_lenses.capitalize()
                     }
                     form_profile = CreateProfileForm(profile_data)
                     if form_profile.is_valid():
@@ -710,6 +708,17 @@ def register_page(request):
                         delete_all(user, image)
                         return render(request, 'site_map/register.html', status=status.HTTP_400_BAD_REQUEST,
                                       context={'YANDEX_MAP': YANDEX_MAP})
+                    scleral_lenses = get_scleral_lenses(data)
+                    if scleral_lenses is not None:
+                        for el in scleral_lenses:
+                            scleral_lenses_data = {
+                                'name': el.capitalize(),
+                                'user': profile
+                            }
+                            form_scleral_lenses = CreateScleralLensesForm(scleral_lenses_data)
+                            if form_scleral_lenses.is_valid():
+                                form_scleral_lenses.save()
+
                     orthokeratological_lenses = choice_orthokeratological_lenses(data)
                     if orthokeratological_lenses is not None:
                         for el in orthokeratological_lenses:

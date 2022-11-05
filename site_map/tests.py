@@ -67,7 +67,7 @@ class AccountTests(APITestCase):
             'number': '+748758947',
             'orthokeratological_lenses_1': 'Contex',
             'customized_orthokeratological_lenses_1': 'RGP Designer',
-            'scleral_lenses': 'OKVision SMARTFIT'
+            'scleral_lenses_1': 'OKVision SMARTFIT'
         }
         url = reverse('register')
         self.client.post(url, data_user, format='json')

@@ -7,5 +7,6 @@ admin.site.register(Profile)
 admin.site.register(Coords)
 admin.site.register(CustomizedOrthokeratologicalLenses)
 admin.site.register(OrthokeratologyFixedDesignLenses)
+admin.site.register(ScleralLenses)
 # admin.site.register(User)
 

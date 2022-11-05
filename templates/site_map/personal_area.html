@@ -144,24 +144,24 @@
                             </div>
                             <div>
                                 <div class="form-check form-check-inline">
-                                    <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio1"
+                                    <input name="scleral_lenses_1" class="form-check-input" type="checkbox" id="inlineRadio1"
                                            value="OKVision SMARTFIT" onclick="get_radio()">
                                     <label class="form-check-label" for="inlineRadio1">OKVision SMARTFIT</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio2"
+                                    <input name="scleral_lenses_2" class="form-check-input" type="checkbox" id="inlineRadio2"
                                            value="SkyOptix ZenLens" onclick="get_radio()">
                                     <label class="form-check-label" for="inlineRadio2">SkyOptix ZenLens</label>
                                 </div>
                                 <br>
                                 <div class="form-check form-check-inline">
-                                    <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio3"
+                                    <input name="scleral_lenses_3" class="form-check-input" type="checkbox" id="inlineRadio3"
                                            value="Нет" onclick="get_radio()">
                                     <label class="form-check-label" for="inlineRadio3">Нет</label>
                                 </div>
                                 <br>
                                 <div class="form-check form-check-inline">
-                                    <input name="scleral_lenses" class="form-check-input" type="radio" id="inlineRadio4"
+                                    <input name="scleral_lenses_4" class="form-check-input" type="checkbox" id="inlineRadio4"
                                            value="Другое" onclick="get_radio()">
                                     <label class="form-check-label" for="inlineRadio4">Другое</label>
                                 </div>
@@ -299,7 +299,6 @@
         $.ajax({
             url: "/get_info"
         }).done(function (data) {
-            console.log(data)
             if (data['customized_orthokeratological_lenses']['RGP Designer'.toUpperCase()]) {
                 let check_1 = document.getElementById('inline1');
                 check_1.checked = true;
@@ -350,8 +349,6 @@
             }
             for (let i = 0; i < Object.keys(d_names).length; i += 1) {
                 let k = Object.keys(d_names)[i];
-                console.log(k)
-                console.log(data['scleral_lenses'][k.toUpperCase()])
                 if (data['scleral_lenses'][k.toUpperCase()]) {
                     let check_3 = document.getElementById(d_names[k]);
                     check_3.checked = true;
@@ -362,7 +359,6 @@
                     }
                 }
             }
-            console.log(data)
         });
 
         function get_radio() {

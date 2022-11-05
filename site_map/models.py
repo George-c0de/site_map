@@ -53,7 +53,8 @@ class Profile(models.Model):
 
     corneal_rigid = models.CharField('Роговичные жесткие газопроницаемые контактные линзы',
                                      max_length=50, choices=YES_OR_NO)
-    scleral_lenses = models.CharField('Склеральные линзы', max_length=150, null=True, blank=True)
+    # scleral_lenses = models.CharField('Склеральные линзы', max_length=150, null=True, blank=True)
+
     description = models.CharField('Дополнительная информация об опыте в контактной коррекции', max_length=200,
                                    null=True, blank=True)
     number = models.CharField('Контактный телефон для коллег', max_length=50, validators=[validate_even])
@@ -63,6 +64,17 @@ class Profile(models.Model):
 
     class Meta:
         verbose_name_plural = _("Пользователь")
+
+
+class ScleralLenses(models.Model):
+    name = models.CharField('Название', max_length=150)
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Name: {self.name}, User: {self.user.user.email}"
+
+    class Meta:
+        verbose_name_plural = _("Склеральные линзы")
 
 
 class CustomizedOrthokeratologicalLenses(models.Model):

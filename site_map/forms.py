@@ -1,6 +1,6 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from site_map.models import Profile, OrthokeratologyFixedDesignLenses, CustomizedOrthokeratologicalLenses
+from site_map.models import Profile, OrthokeratologyFixedDesignLenses, CustomizedOrthokeratologicalLenses, ScleralLenses
 from django import forms
 
 
@@ -13,6 +13,12 @@ class CreateUserForm(UserCreationForm):
 class CreateProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
+        fields = '__all__'
+
+
+class CreateScleralLensesForm(forms.ModelForm):
+    class Meta:
+        model = ScleralLenses
         fields = '__all__'
 
 
