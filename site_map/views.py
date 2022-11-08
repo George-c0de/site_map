@@ -315,16 +315,16 @@ def get_coords_and_profile(request):
 
         for lenses in ScleralLenses.objects.filter(user=profile):
             description += lenses.name.capitalize() + ', '
-        description = description[:-3]
+        description = description[:-2]
         description += '<br/>Ортокератологические линзы c фиксированным дизайном: '
         for lenses in OrthokeratologyFixedDesignLenses.objects.filter(user=profile):
             description += lenses.name.capitalize() + ', '
-        description = description[:-3]
+        description = description[:-2]
 
         description += '<br/>Кастомизированные ортокератологические линзы: '
         for lenses in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
             description += lenses.name.capitalize() + ', '
-        description = description[:-3]
+        description = description[:-2]
         description += '<br/>'
 
         pattern_point_properties['balloonContentBody'] = description
