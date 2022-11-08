@@ -19,7 +19,9 @@
                 <li class="nav-item"><a href="{% url 'home' %}" class="nav-link link-dark px-2 active"
                                         aria-current="page">Главная страница</a>
                 </li>
+                {% if auth %}
                 <li class="nav-item"><a href="{% url 'lk' %}" class="nav-link link-dark px-2">Личный кабинет</a></li>
+                {% endif %}
             </ul>
             <ul class="nav">
                 {% if auth %}
