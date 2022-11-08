@@ -144,24 +144,28 @@
                             </div>
                             <div>
                                 <div class="form-check form-check-inline">
-                                    <input name="scleral_lenses_1" class="form-check-input" type="checkbox" id="inlineRadio1"
+                                    <input name="scleral_lenses_1" class="form-check-input" type="checkbox"
+                                           id="inlineRadio1"
                                            value="OKVision SMARTFIT" onclick="get_radio()">
                                     <label class="form-check-label" for="inlineRadio1">OKVision SMARTFIT</label>
                                 </div>
                                 <div class="form-check form-check-inline">
-                                    <input name="scleral_lenses_2" class="form-check-input" type="checkbox" id="inlineRadio2"
+                                    <input name="scleral_lenses_2" class="form-check-input" type="checkbox"
+                                           id="inlineRadio2"
                                            value="SkyOptix ZenLens" onclick="get_radio()">
                                     <label class="form-check-label" for="inlineRadio2">SkyOptix ZenLens</label>
                                 </div>
                                 <br>
                                 <div class="form-check form-check-inline">
-                                    <input name="scleral_lenses_3" class="form-check-input" type="checkbox" id="inlineRadio3"
+                                    <input name="scleral_lenses_3" class="form-check-input" type="checkbox"
+                                           id="inlineRadio3"
                                            value="Нет" onclick="get_radio()">
                                     <label class="form-check-label" for="inlineRadio3">Нет</label>
                                 </div>
                                 <br>
                                 <div class="form-check form-check-inline">
-                                    <input name="scleral_lenses_4" class="form-check-input" type="checkbox" id="inlineRadio4"
+                                    <input name="scleral_lenses_4" class="form-check-input" type="checkbox"
+                                           id="inlineRadio4"
                                            value="Другое" onclick="get_radio()">
                                     <label class="form-check-label" for="inlineRadio4">Другое</label>
                                 </div>
@@ -284,7 +288,8 @@
                                 </select>
                             </label>
                             <button type="button" class="btn btn-secondary" onclick="f()">Удалить точку</button>
-                            <button type="button" class="btn btn-secondary" onclick="add_coords()">Добавить точку</button>
+                            <button type="button" class="btn btn-secondary" onclick="add_coords()">Добавить точку
+                            </button>
                         </div>
                     </div>
                     <button class="w-100 btn btn-primary btn-lg" type="submit">Сохранить изменения</button>
@@ -299,6 +304,11 @@
         $.ajax({
             url: "/get_info"
         }).done(function (data) {
+            function capitalizeFirstLetter(string) {
+                string = string.toLowerCase()
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+
             if (data['customized_orthokeratological_lenses']['RGP Designer'.toUpperCase()]) {
                 let check_1 = document.getElementById('inline1');
                 check_1.checked = true;
@@ -314,7 +324,7 @@
             if (data['customized_orthokeratological_lenses']['Другое'.toUpperCase()]) {
                 let check_4 = document.getElementById('inline4');
                 let check_5 = document.getElementById('14');
-                check_5.value = data['customized_orthokeratological_lenses']['Другое'.toUpperCase()];
+                check_5.value = capitalizeFirstLetter(data['customized_orthokeratological_lenses']['Другое'.toUpperCase()]);
                 check_5.style.visibility = "visible";
                 check_4.checked = true;
             }
@@ -329,6 +339,7 @@
                 'нет': 'inlineCheckbox7',
                 'Другое': 'inlineCheckbox8',
             }
+
             for (let i = 0; i < Object.keys(d_names).length; i += 1) {
                 let k = Object.keys(d_names)[i];
                 if (data['orthokeratological_lenses'][k.toUpperCase()]) {
@@ -336,7 +347,7 @@
                     check_3.checked = true;
                     if (k.toUpperCase() === 'ДРУГОЕ') {
                         let check_5 = document.getElementById('15');
-                        check_5.value = data['orthokeratological_lenses']['Другое'.toUpperCase()];
+                        check_5.value = capitalizeFirstLetter(data['orthokeratological_lenses']['Другое'.toUpperCase()])
                         check_5.style.visibility = "visible";
                     }
                 }
@@ -354,7 +365,7 @@
                     check_3.checked = true;
                     if (k.toUpperCase() === 'ДРУГОЕ') {
                         let check_5 = document.getElementById('17');
-                        check_5.value = data['scleral_lenses']['Другое'.toUpperCase()];
+                        check_5.value = capitalizeFirstLetter(data['scleral_lenses']['Другое'.toUpperCase()]);
                         check_5.style.visibility = "visible";
                     }
                 }
