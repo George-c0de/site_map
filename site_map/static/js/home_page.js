@@ -91,6 +91,34 @@ function init() {
     }, {
         searchControlProvider: 'yandex#search'
     })
+    let secondButton = new ymaps.control.Button({
+        data: {
+            // Зададим текст и иконку для кнопки.
+            content: "Сбросить",
+        },
+        options: {
+            // Поскольку кнопка будет менять вид в зависимости от размера карты,
+            // зададим ей три разных значения maxWidth в массиве.
+            maxWidth: [28, 150, 178],
+            selectOnClick: false
+        }
+
+    });
+
+    function reset_filter(list_filter) {
+        for (let i = 0; i < list_filter.length; i += 1) {
+
+            for (let j = 0; j < list_filter[i].getAll().length; j += 1) {
+                list_filter[i].getAll()[j].deselect();
+            }
+        }
+    }
+
+    secondButton.events.add('click', function (e) {
+        reset_filter(all_filters);
+    });
+    myMap.controls.add(secondButton);
+
     let objectManager = new ymaps.ObjectManager({
         // Чтобы метки начали кластеризоваться, выставляем опцию.
         clusterize: true,
@@ -262,8 +290,7 @@ function init() {
                         }
                     }
                     res.push(yes_or_no)
-                }
-                else{
+                } else {
                     res.push(categories[Object.keys(categories)[i]][content])
                 }
             }

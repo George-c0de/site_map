@@ -291,8 +291,43 @@ def get_coords_and_profile(request):
         fio_html = f'<b>ФИО: </b>{user.last_name} {user.first_name} {profile.patronymic}'
         email_html = f'<b>Email: </b>{user.email}'
         # Содержимое точки на карте
-        pattern_point_properties[
-            'balloonContentBody'] = f'{image_html} <br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{el.address}'
+        description = f'{image_html} <br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{el.address}'
+        description += f'<br/>Должность: {profile.position}'
+
+        description += f'<br/>Специализированное обучение по контактной коррекции: {profile.specialized_training}'
+        description += f'<br/>Cтандартные мягкие контактные линзы: {get_yes_or_no(profile.standard_soft)}<br/>'
+
+        standard_soft_for_myopia = get_yes_or_no(profile.standard_soft_for_myopia)
+        description += f'Специальные мягкие контактные линзы для контроля миопии: {standard_soft_for_myopia}'
+
+        customized_soft_contact_lenses = get_yes_or_no(profile.customized_soft_contact_lenses)
+        description += f'<br/>Индивидуальные мягкие контактные линзы: {customized_soft_contact_lenses}<br/>'
+        soft_contact_lenses_for_keratoconus = get_yes_or_no(profile.soft_contact_lenses_for_keratoconus)
+
+        description += f'Мягкие контактные линзы для кератоконуса: {soft_contact_lenses_for_keratoconus}<br/>'
+
+        corneal_rigid = get_yes_or_no(profile.corneal_rigid)
+        description += f'Роговичные жесткие газопроницаемые контактные линзы: {corneal_rigid}<br/>'
+
+        description += f'Дополнительная информация об опыте в контактной коррекции: {profile.description}'
+
+        description += f'<br/>Склеральные линзы: '
+
+        for lenses in ScleralLenses.objects.filter(user=profile):
+            description += lenses.name.capitalize() + ', '
+        description = description[:-3]
+        description += '<br/>Ортокератологические линзы c фиксированным дизайном: '
+        for lenses in OrthokeratologyFixedDesignLenses.objects.filter(user=profile):
+            description += lenses.name.capitalize() + ', '
+        description = description[:-3]
+
+        description += '<br/>Кастомизированные ортокератологические линзы: '
+        for lenses in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
+            description += lenses.name.capitalize() + ', '
+        description = description[:-3]
+        description += '<br/>'
+
+        pattern_point_properties['balloonContentBody'] = description
         pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Ваша организация"'
         pattern_point_properties[
             'hintContent'] = f'<img alt="картинка" src="{image}" height="100" width="100" >'
@@ -300,6 +335,13 @@ def get_coords_and_profile(request):
         result_end['features'].append(point)
         i += 1
     return Response(data=result_end)
+
+
+def get_yes_or_no(prop):
+    if prop.upper() == 'YES':
+        return 'Да'
+    else:
+        return 'Нет'
 
 
 def get_message(
