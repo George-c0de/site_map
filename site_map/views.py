@@ -283,19 +283,22 @@ def get_coords_and_profile(request):
         y = json.dumps(el.coords_y, cls=DecimalEncoder)[1:-2]
         point['geometry']['coordinates'] = [x, y]  # Координаты
         pattern_point_properties['balloonContentHeader'] = f'{el.address} <br>'
+        # pattern_point_properties[
+        #     'balloonContentHeader'] = f'<b>ФИО: </b>{user.last_name} {user.first_name} {profile.patronymic}'
         if profile.photo.image.name != '':
             image = profile.photo.image.url
         else:
             image = ''
-        image_html = f'<img alt="картинка" src="{image}" height="150" width="200"'
+        image_html = f'<img alt="картинка" src="{image}" height="180" width="180"'
         fio_html = f'<b>ФИО: </b>{user.last_name} {user.first_name} {profile.patronymic}'
         email_html = f'<b>Email: </b>{user.email}'
         # Содержимое точки на карте
-        description = f'{image_html} <br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{el.address}'
-        description += f'<br/>Должность: {profile.position}'
+        description = f'{image_html} <br/><br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{el.address}'
+        description += f'<br/><b>Должность:</b> {profile.position}'
 
-        description += f'<br/>Специализированное обучение по контактной коррекции: {profile.specialized_training}'
-        description += f'<br/>Cтандартные мягкие контактные линзы: {get_yes_or_no(profile.standard_soft)}<br/>'
+        specialized_training = profile.specialized_training
+        description += f'<br/><b>Специализированное обучение по контактной коррекции:</b> {specialized_training}'
+        description += f'<br/><b>Cтандартные мягкие контактные линзы:</b> {get_yes_or_no(profile.standard_soft)}<br/>'
 
         standard_soft_for_myopia = get_yes_or_no(profile.standard_soft_for_myopia)
         description += f'Специальные мягкие контактные линзы для контроля миопии: {standard_soft_for_myopia}'
@@ -328,9 +331,8 @@ def get_coords_and_profile(request):
         description += '<br/>'
 
         pattern_point_properties['balloonContentBody'] = description
-        pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Ваша организация"'
-        pattern_point_properties[
-            'hintContent'] = f'<img alt="картинка" src="{image}" height="100" width="100" >'
+        # pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Ваша организация"'
+        pattern_point_properties['hintContent'] = f'<img alt="картинка" src="{image}" height="100" width="100" >'
         point['properties'] = pattern_point_properties
         result_end['features'].append(point)
         i += 1
