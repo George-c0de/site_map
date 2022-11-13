@@ -301,30 +301,30 @@ def get_coords_and_profile(request):
         description += f'<br/><b>Cтандартные мягкие контактные линзы:</b> {get_yes_or_no(profile.standard_soft)}<br/>'
 
         standard_soft_for_myopia = get_yes_or_no(profile.standard_soft_for_myopia)
-        description += f'Специальные мягкие контактные линзы для контроля миопии: {standard_soft_for_myopia}'
+        description += f'<b>Специальные мягкие контактные линзы для контроля миопии:</b> {standard_soft_for_myopia}'
 
         customized_soft_contact_lenses = get_yes_or_no(profile.customized_soft_contact_lenses)
-        description += f'<br/>Индивидуальные мягкие контактные линзы: {customized_soft_contact_lenses}<br/>'
+        description += f'<br/><b>Индивидуальные мягкие контактные линзы:</b> {customized_soft_contact_lenses}<br/>'
         soft_contact_lenses_for_keratoconus = get_yes_or_no(profile.soft_contact_lenses_for_keratoconus)
 
-        description += f'Мягкие контактные линзы для кератоконуса: {soft_contact_lenses_for_keratoconus}<br/>'
+        description += f'<b>Мягкие контактные линзы для кератоконуса:</b> {soft_contact_lenses_for_keratoconus}<br/>'
 
         corneal_rigid = get_yes_or_no(profile.corneal_rigid)
-        description += f'Роговичные жесткие газопроницаемые контактные линзы: {corneal_rigid}<br/>'
+        description += f'<b>Роговичные жесткие газопроницаемые контактные линзы:</b> {corneal_rigid}<br/>'
 
-        description += f'Дополнительная информация об опыте в контактной коррекции: {profile.description}'
+        description += f'<b>Дополнительная информация об опыте в контактной коррекции:</b> {profile.description}'
 
-        description += f'<br/>Склеральные линзы: '
+        description += f'<br/><b>Склеральные линзы:</b> '
 
         for lenses in ScleralLenses.objects.filter(user=profile):
             description += lenses.name.capitalize() + ', '
         description = description[:-2]
-        description += '<br/>Ортокератологические линзы c фиксированным дизайном: '
+        description += '<br/><b>Ортокератологические линзы c фиксированным дизайном:</b> '
         for lenses in OrthokeratologyFixedDesignLenses.objects.filter(user=profile):
             description += lenses.name.capitalize() + ', '
         description = description[:-2]
 
-        description += '<br/>Кастомизированные ортокератологические линзы: '
+        description += '<br/><b>Кастомизированные ортокератологические линзы:</b> '
         for lenses in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
             description += lenses.name.capitalize() + ', '
         description = description[:-2]
