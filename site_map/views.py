@@ -291,9 +291,11 @@ def get_coords_and_profile(request):
             image = ''
         image_html = f'<img alt="картинка" src="{image}" height="180" width="180"'
         fio_html = f'<b>ФИО: </b>{user.last_name} {user.first_name} {profile.patronymic}'
-        email_html = f'<b>Email: </b>{user.email}'
+        # email_html = f'<b>Email: </b>{user.email}'
         # Содержимое точки на карте
-        description = f'{image_html} <br/><br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{el.address}'
+
+        # description = f'{image_html} <br/><br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{el.address}'
+        description = f'{image_html} <br/><br/> {fio_html}<br/><b>Адрес: </b>{el.address}'
         description += f'<br/><b>Должность:</b> {profile.position}'
 
         specialized_training = profile.specialized_training
@@ -315,20 +317,28 @@ def get_coords_and_profile(request):
         description += f'<b>Дополнительная информация об опыте в контактной коррекции:</b> {profile.description}'
 
         description += f'<br/><b>Склеральные линзы:</b> '
-
-        for lenses in ScleralLenses.objects.filter(user=profile):
-            description += lenses.name.capitalize() + ', '
-        description = description[:-2]
+        if ScleralLenses.objects.filter(user=profile).exists():
+            for lenses in ScleralLenses.objects.filter(user=profile):
+                description += lenses.name.capitalize() + ', '
+            description = description[:-2]
+        else:
+            description += ' Нет'
         description += '<br/><b>Ортокератологические линзы c фиксированным дизайном:</b> '
-        for lenses in OrthokeratologyFixedDesignLenses.objects.filter(user=profile):
-            description += lenses.name.capitalize() + ', '
-        description = description[:-2]
+        if OrthokeratologyFixedDesignLenses.objects.filter(user=profile).exists():
+            for lenses in OrthokeratologyFixedDesignLenses.objects.filter(user=profile):
+                description += lenses.name.capitalize() + ', '
+            description = description[:-2]
+        else:
+            description += ' Нет'
 
         description += '<br/><b>Кастомизированные ортокератологические линзы:</b> '
-        for lenses in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
-            description += lenses.name.capitalize() + ', '
-        description = description[:-2]
-        description += '<br/>'
+        if CustomizedOrthokeratologicalLenses.objects.filter(user=profile).exists():
+            for lenses in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
+                description += lenses.name.capitalize() + ', '
+            description = description[:-2]
+        else:
+            description += ' Нет'
+        # description += '<br/>'
 
         pattern_point_properties['balloonContentBody'] = description
         # pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Ваша организация"'
