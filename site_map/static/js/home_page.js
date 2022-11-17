@@ -3,6 +3,7 @@ let object_arr = []
 let object_all = []
 ymaps.ready(init);
 let all_filters = []
+let get_all_coords = null;
 
 function CustomSearchProvider(points) {
     this.points = points;
@@ -22,9 +23,10 @@ CustomSearchProvider.prototype.geocode = function (request, options) {
         let point = this.points[i];
         if (point['properties'].balloonContentHeader.slice(0, -4).toLowerCase().indexOf(request.toLowerCase()) !== -1) {
             points.push(point);
-        } else if (point['properties'].balloonContentBody.split('<br/>')[2].slice(12, -1).toLowerCase().indexOf(request.toLowerCase()) !== -1) {
-            points.push(point);
         }
+        // else if (point['properties'].balloonContentBody.split('<br/>')[2].slice(12, -1).toLowerCase().indexOf(request.toLowerCase()) !== -1) {
+        //     points.push(point);
+        // }
     }
     // При формировании ответа можно учитывать offset и limit.
     points = points.splice(offset, limit);
@@ -53,13 +55,14 @@ CustomSearchProvider.prototype.geocode = function (request, options) {
         title.scope = "row";
         title.innerHTML = String(points.length - i);
         let fio = document.createElement('td');
-        fio.innerHTML = String(point['properties'].balloonContentHeader.slice(0, -4));
+        fio.innerHTML = String(point['properties'].balloonContentBody.split('<b>')[1]).slice(9, -5);
         let address = document.createElement('td');
-        address.innerHTML = String(point['properties'].balloonContentBody.split('<b>')[2].slice(4, -1));
-        data_table2.insertBefore(fio, data_table2.firstChild);
+        address.innerHTML = String(point['properties'].balloonContentBody.split('<b>')[2].slice(11, -5));
         data_table2.insertBefore(address, data_table2.firstChild);
+        data_table2.insertBefore(fio, data_table2.firstChild);
         data_table2.insertBefore(title, data_table2.firstChild);
     }
+
     deferred.resolve({
         // Геообъекты поисковой выдачи.
         geoObjects: geoObjects,
@@ -85,8 +88,8 @@ CustomSearchProvider.prototype.geocode = function (request, options) {
 
 function init() {
     let myMap = new ymaps.Map("map", {
-        center: [55.76, 37.64],
-        zoom: 10,
+        center: [55.76, 30],
+        zoom: 3,
         controls: []
     }, {
         searchControlProvider: 'yandex#search'
@@ -226,11 +229,11 @@ function init() {
                     title.scope = "row";
                     title.innerHTML = String(object_arr.length - i);
                     var fio = document.createElement('td');
-                    fio.innerHTML = String(point['properties'].balloonContentHeader.slice(0, -4));
+                    fio.innerHTML = String(point['properties'].balloonContentBody.split('<b>')[1]).slice(9, -5);
                     var address = document.createElement('td');
-                    address.innerHTML = String(point['properties'].balloonContentBody.split('<b>')[2].slice(4, -1));
-                    data_table2.insertBefore(fio, data_table2.firstChild);
+                    address.innerHTML = String(point['properties'].balloonContentBody.split('<b>')[2].slice(11, -5));
                     data_table2.insertBefore(address, data_table2.firstChild);
+                    data_table2.insertBefore(fio, data_table2.firstChild);
                     data_table2.insertBefore(title, data_table2.firstChild);
                 }
                 let mySearchControl = new ymaps.control.SearchControl({
@@ -309,6 +312,7 @@ function init() {
     $.ajax({
         url: "/get_coords_and_profile"
     }).done(function (data) {
+        get_all_coords = data;
         objectManager.add(data);
         let mySearchControl = new ymaps.control.SearchControl({
             options: {
@@ -325,6 +329,4 @@ function init() {
             .add(mySearchControl, {float: 'right'});
         old_control = mySearchControl
     });
-
-
 }
