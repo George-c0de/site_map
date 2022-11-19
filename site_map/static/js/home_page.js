@@ -88,8 +88,8 @@ CustomSearchProvider.prototype.geocode = function (request, options) {
 
 function init() {
     let myMap = new ymaps.Map("map", {
-        center: [55.76, 30],
-        zoom: 3,
+        center: [61.698394, 99.502091],
+        zoom: 3.1,
         controls: []
     }, {
         searchControlProvider: 'yandex#search'

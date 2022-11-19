@@ -9,8 +9,9 @@ class Image(models.Model):
     image = models.ImageField('/', blank=True)
 
     def __str__(self):
-        if Profile.objects.filter(photo_id=self.id).exists():
-            return f"{Profile.objects.get(photo_id=self.id)}"
+        print(self.image.name)
+        if self.image.name is not None and self.image.name != '':
+            return self.image.name
         else:
             return f"name"
 

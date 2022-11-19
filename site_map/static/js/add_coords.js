@@ -13,7 +13,7 @@ async function add_coords() {
             filter_coords: filter_coords,
         },
         success: function () {
-            alert("Адресс добавлен");
+            alert("Адрес добавлен");
             location.reload();
         }
     })

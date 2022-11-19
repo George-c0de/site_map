@@ -289,7 +289,7 @@ def get_coords_and_profile(request):
             image = profile.photo.image.url
         else:
             image = ''
-        image_html = f'<div class="cover"><img alt="картинка" src="{image}" height="180" width="180"></div>'
+        image_html = f'<img class="cover" alt="картинка" src="{image}">'
         fio_html = f'<b>ФИО: </b>{user.last_name} {user.first_name} {profile.patronymic}'
         # email_html = f'<b>Email: </b>{user.email}'
         # Содержимое точки на карте
