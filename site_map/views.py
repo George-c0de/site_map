@@ -192,7 +192,7 @@ def get_filter(request):
         profile = Profile.objects.get(id=el.user.id)
         if el.filter_coords not in result_end['city']:
             result_end['city'].append(el.filter_coords.capitalize())
-        if profile.position not in result_end['position']:
+        if profile.position.capitalize() not in result_end['position']:
             result_end['position'].append(profile.position.capitalize())
         if profile.standard_soft.upper() not in result_end['standard_soft']:
             result_end['standard_soft'].append(profile.standard_soft.upper())
@@ -263,7 +263,7 @@ def get_coords_and_profile(request):
         for cust in all_customized_orthokeratological_lenses:
             customized_orthokeratological_lenses.append(cust.name.capitalize())
         filters = {
-            'position': profile.position,
+            'position': profile.position.capitalize(),
             'standard_soft': profile.standard_soft,
             'standard_soft_for_myopia': profile.standard_soft_for_myopia,
             'customized_soft_contact_lenses': profile.customized_soft_contact_lenses,
@@ -296,7 +296,7 @@ def get_coords_and_profile(request):
 
         # description = f'{image_html} <br/><br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{el.address}'
         description = f'{image_html} <br/><br/> {fio_html}<br/><b>Адрес: </b>{el.address}'
-        description += f'<br/><b>Должность:</b> {profile.position}'
+        description += f'<br/><b>Должность:</b> {profile.position.capitalize()}'
 
         specialized_training = profile.specialized_training
         description += f'<br/><b>Специализированное обучение по контактной коррекции:</b> {specialized_training}'
@@ -342,7 +342,7 @@ def get_coords_and_profile(request):
 
         pattern_point_properties['balloonContentBody'] = description
         # pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Ваша организация"'
-        pattern_point_properties['hintContent'] = f'<img alt="картинка" src="{image}" height="100" width="100" >'
+        pattern_point_properties['hintContent'] = f'{fio_html}'
         point['properties'] = pattern_point_properties
         result_end['features'].append(point)
         i += 1

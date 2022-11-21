@@ -102,8 +102,8 @@ class OrthokeratologyFixedDesignLenses(models.Model):
 
 class Coords(models.Model):
     address = models.CharField('Адрес', max_length=150, default='')
-    coords_x = models.DecimalField('X', max_digits=17, decimal_places=15)
-    coords_y = models.DecimalField('Y', max_digits=17, decimal_places=15)
+    coords_x = models.DecimalField('X', max_digits=20, decimal_places=15)
+    coords_y = models.DecimalField('Y', max_digits=20, decimal_places=15)
     filter_coords = models.CharField('Фильтр', max_length=150, default='')
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
 
