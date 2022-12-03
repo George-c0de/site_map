@@ -24,6 +24,9 @@ CustomSearchProvider.prototype.geocode = function (request, options) {
         if (point['properties'].balloonContentHeader.slice(0, -4).toLowerCase().indexOf(request.toLowerCase()) !== -1) {
             points.push(point);
         }
+        else if (point['properties'].hintContent.slice(12, -1).toLowerCase().indexOf(request.toLowerCase()) !== -1) {
+            points.push(point);
+        }
         // else if (point['properties'].balloonContentBody.split('<br/>')[2].slice(12, -1).toLowerCase().indexOf(request.toLowerCase()) !== -1) {
         //     points.push(point);
         // }
