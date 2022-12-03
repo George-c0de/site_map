@@ -12,7 +12,7 @@ tags:
       description: Find out more
       url: https://yandex.ru/dev/maps/jsapi/doc/2.1/dg/concepts/load.html
 paths:
-  /api/login:
+  /get_coords:
     get:
       tags:
         - coords
@@ -25,10 +25,10 @@ paths:
           content:
             application/xml:
               schema:
-                type: string
+                $ref: '#/components/schemas/Coords'
             application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/Coords'
         '400':
           description: Error
 components:

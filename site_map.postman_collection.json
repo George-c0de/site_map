@@ -1,0 +1,18 @@
+{
+	"info": {
+		"_postman_id": "cdb25027-2073-4981-b94b-fb066c125bb7",
+		"name": "site_map",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19667838"
+	},
+	"item": [
+		{
+			"name": "get_coords",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}
