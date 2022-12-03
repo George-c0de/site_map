@@ -1,0 +1,191 @@
+openapi: 3.0.3
+info:
+  title: search for specialists on the map
+  description: selection of filter specialists
+  version: 1.0.11
+servers:
+  - url: http://94.154.11.214/
+tags:
+  - name: coords
+    description: Yandex map integration
+    externalDocs:
+      description: Find out more
+      url: https://yandex.ru/dev/maps/jsapi/doc/2.1/dg/concepts/load.html
+paths:
+  /api/login:
+    get:
+      tags:
+        - coords
+      summary: Получение всех точек
+      description: 'Получение всех точек с фильтрами: 1.Кастомизированные ортокератологические линзы 2. Ортокератологические линзы c фиксированным дизайном  '
+      operationId: get_site_coords
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/xml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: Error
+components:
+  schemas:
+    Coord:
+      type: object
+      properties:
+        position:
+          type: string
+          example: Должность
+        standard_soft:
+          type: string
+          description: Cтандартные мягкие контактные линзы
+          example: YES
+        standard_soft_for_myopia:
+          type: string
+          example: YES
+          description: Специальные мягкие контактные линзы для контроля миопии
+        customized_soft_contact_lenses:
+          type: string
+          example: YES
+          description: Индивидуальные мягкие контактные линзы
+        soft_contact_lenses_for_keratoconus:
+          type: string
+          description: Мягкие контактные линзы для кератоконуса
+          example: YES
+        corneal_rigid:
+          type: string
+          example: YES
+          description: Роговичные жесткие газопроницаемые контактные линзы
+        scleral_lenses:
+          type: array
+          description: Склеральные линзы
+          example: [
+            "Okvision smartfit",
+            "Skyoptix zenlens",
+            "Кое-что"
+          ]
+        orthokeratological_lenses:
+          type: array
+          description: Ортокератологические линзы c фиксированным дизайном
+          example: [
+            "Нет"
+          ]
+        customized_orthokeratological_lenses:
+          type: array
+          description: Кастомизированные ортокератологические линзы
+          example: [
+            "Rgp designer"
+          ]
+        city:
+          type: string
+          example: Москва
+    Coords:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        type:
+          type: string
+          example: Feature
+        geometry:
+          type: object
+          properties:
+            type:
+              type: integer
+              format: int64
+              example: 1
+            options:
+              type: object
+              properties:
+                preset:
+                  type: array
+                  example: [
+                    "islands#yellowCircleDotIconWithCaption"
+                  ]
+            coordinates:
+              type: array
+              example: [
+                "55.72019325687714",
+                "37.67565134960937"
+              ]
+        properties:
+          type: object
+          properties:
+            balloonContent:
+              type: object
+              properties:
+                position:
+                  type: string
+                  example: Должность
+                standard_soft:
+                  type: string
+                  description: Cтандартные мягкие контактные линзы
+                  example: YES
+                standard_soft_for_myopia:
+                  type: string
+                  example: YES
+                  description: Специальные мягкие контактные линзы для контроля миопии
+                customized_soft_contact_lenses:
+                  type: string
+                  example: YES
+                  description: Индивидуальные мягкие контактные линзы
+                soft_contact_lenses_for_keratoconus:
+                  type: string
+                  description: Мягкие контактные линзы для кератоконуса
+                  example: YES
+                corneal_rigid:
+                  type: string
+                  example: YES
+                  description: Роговичные жесткие газопроницаемые контактные линзы
+                scleral_lenses:
+                  type: array
+                  description: Склеральные линзы
+                  example: [
+                    "Okvision smartfit",
+                    "Skyoptix zenlens",
+                    "Кое-что"
+                  ]
+                orthokeratological_lenses:
+                  type: array
+                  description: Ортокератологические линзы c фиксированным дизайном
+                  example: [
+                    "Нет"
+                  ]
+                customized_orthokeratological_lenses:
+                  type: array
+                  description: Кастомизированные ортокератологические линзы
+                  example: [
+                    "Rgp designer"
+                  ]
+                city:
+                  type: string
+                  example: Москва
+            clusterCaption:
+              type: string
+              example: Москва
+            balloonContentHeader:
+              type: string
+              example: Россия, Москва, Шарикоподшипниковская улица, 11с6 <br>
+            balloonContentBody:
+              type: string
+              example: "<img class=\"cover\" alt=\"картинка\" src=\"/media/Nesterenko_RA.jpg\"> <br/><br/> <b>ФИО: </b>Петров Петр Петрович<br/><b>Адрес: </b>Россия, Москва, Шарикоподшипниковская улица, 11с6<br/><b>Должность:</b> Главврач<br/><b>Специализированное обучение по контактной коррекции:</b> 6<br/><b>Cтандартные мягкие контактные линзы:</b> Да<br/><b>Специальные мягкие контактные линзы для контроля миопии:</b> Нет<br/><b>Индивидуальные мягкие контактные линзы:</b> Да<br/><b>Мягкие контактные линзы для кератоконуса:</b> Нет<br/><b>Роговичные жесткие газопроницаемые контактные линзы:</b> Да<br/><b>Дополнительная информация об опыте в контактной коррекции:</b> 6<br/><b>Склеральные линзы:</b> Okvision smartfit, Skyoptix zenlens, Кое что<br/><b>Ортокератологические линзы c фиксированным дизайном:</b> Нет<br/><b>Кастомизированные ортокератологические линзы:</b> Rgp designer"
+            hintContent:
+              type: string
+              example: "<b>ФИО: </b>Петров Петр Петрович"
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+      xml:
+        name: '##default'

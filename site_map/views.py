@@ -225,6 +225,146 @@ def get_filter(request):
     return Response(data=result_end)
 
 
+def check_coords(profile):
+    res = False
+    for el in OrthokeratologyFixedDesignLenses.objects.filter(user=profile):
+        if el.name.upper() != 'Нет'.upper():
+            res = True
+    for el in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
+        if el.name.upper() != 'Нет'.upper():
+            res = True
+    return res
+
+
+@api_view(['GET'])
+def get_site_coords(request):
+    coords = Coords.objects.all()
+    result_end = {
+        'type': 'FeatureCollection',
+        'features': []
+    }
+    i = 0
+    for el in coords:
+        profile = Profile.objects.get(id=el.user.id)
+        user = profile.user
+        # Шаблон для точки на карте
+        point = {
+            "id": i,
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "options": {
+                    "preset": {
+                        "islands#yellowCircleDotIconWithCaption",
+                    }
+                }
+            }
+        }
+        all_scleral_lenses = ScleralLenses.objects.filter(user=profile)
+        scleral_lenses = []
+        for le in all_scleral_lenses:
+            scleral_lenses.append(le.name.capitalize())
+        if not check_coords(profile):
+            continue
+
+        all_orthokeratological_lenses = OrthokeratologyFixedDesignLenses.objects.filter(user=profile)
+
+        orthokeratological_lenses = []
+        for le in all_orthokeratological_lenses:
+            orthokeratological_lenses.append(le.name.capitalize())
+
+        all_customized_orthokeratological_lenses = CustomizedOrthokeratologicalLenses.objects.filter(user=profile)
+
+        customized_orthokeratological_lenses = []
+        for cust in all_customized_orthokeratological_lenses:
+            customized_orthokeratological_lenses.append(cust.name.capitalize())
+        filters = {
+            'position': profile.position.capitalize(),
+            'standard_soft': profile.standard_soft,
+            'standard_soft_for_myopia': profile.standard_soft_for_myopia,
+            'customized_soft_contact_lenses': profile.customized_soft_contact_lenses,
+            'soft_contact_lenses_for_keratoconus': profile.soft_contact_lenses_for_keratoconus,
+            'corneal_rigid': profile.corneal_rigid,
+            'scleral_lenses': scleral_lenses,
+            'orthokeratological_lenses': orthokeratological_lenses,
+            'customized_orthokeratological_lenses': customized_orthokeratological_lenses,
+            'city': el.filter_coords.capitalize()
+        }
+
+        pattern_point_properties = {
+            "balloonContent": filters,
+            "clusterCaption": f"{el.filter_coords}"
+        }
+        x = json.dumps(el.coords_x, cls=DecimalEncoder)[1:-2]
+        y = json.dumps(el.coords_y, cls=DecimalEncoder)[1:-2]
+        point['geometry']['coordinates'] = [x, y]  # Координаты
+        pattern_point_properties['balloonContentHeader'] = f'{el.address} <br>'
+        # pattern_point_properties[
+        #     'balloonContentHeader'] = f'<b>ФИО: </b>{user.last_name} {user.first_name} {profile.patronymic}'
+        if profile.photo.image.name != '':
+            image = profile.photo.image.url
+        else:
+            image = ''
+        image_html = f'<img class="cover" alt="картинка" src="{image}">'
+        fio_html = f'<b>ФИО: </b>{user.last_name} {user.first_name} {profile.patronymic}'
+        # email_html = f'<b>Email: </b>{user.email}'
+        # Содержимое точки на карте
+
+        # description = f'{image_html} <br/><br/> {email_html}<br/>{fio_html}<br/><b>Адрес: </b>{el.address}'
+        description = f'{image_html} <br/><br/> {fio_html}<br/><b>Адрес: </b>{el.address}'
+        description += f'<br/><b>Должность:</b> {profile.position.capitalize()}'
+
+        specialized_training = profile.specialized_training
+        description += f'<br/><b>Специализированное обучение по контактной коррекции:</b> {specialized_training}'
+        description += f'<br/><b>Cтандартные мягкие контактные линзы:</b> {get_yes_or_no(profile.standard_soft)}<br/>'
+
+        standard_soft_for_myopia = get_yes_or_no(profile.standard_soft_for_myopia)
+        description += f'<b>Специальные мягкие контактные линзы для контроля миопии:</b> {standard_soft_for_myopia}'
+
+        customized_soft_contact_lenses = get_yes_or_no(profile.customized_soft_contact_lenses)
+        description += f'<br/><b>Индивидуальные мягкие контактные линзы:</b> {customized_soft_contact_lenses}<br/>'
+        soft_contact_lenses_for_keratoconus = get_yes_or_no(profile.soft_contact_lenses_for_keratoconus)
+
+        description += f'<b>Мягкие контактные линзы для кератоконуса:</b> {soft_contact_lenses_for_keratoconus}<br/>'
+
+        corneal_rigid = get_yes_or_no(profile.corneal_rigid)
+        description += f'<b>Роговичные жесткие газопроницаемые контактные линзы:</b> {corneal_rigid}<br/>'
+
+        description += f'<b>Дополнительная информация об опыте в контактной коррекции:</b> {profile.description}'
+
+        description += f'<br/><b>Склеральные линзы:</b> '
+        if ScleralLenses.objects.filter(user=profile).exists():
+            for lenses in ScleralLenses.objects.filter(user=profile):
+                description += lenses.name.capitalize() + ', '
+            description = description[:-2]
+        else:
+            description += ' Нет'
+        description += '<br/><b>Ортокератологические линзы c фиксированным дизайном:</b> '
+        if OrthokeratologyFixedDesignLenses.objects.filter(user=profile).exists():
+            for lenses in OrthokeratologyFixedDesignLenses.objects.filter(user=profile):
+                description += lenses.name.capitalize() + ', '
+            description = description[:-2]
+        else:
+            description += ' Нет'
+
+        description += '<br/><b>Кастомизированные ортокератологические линзы:</b> '
+        if CustomizedOrthokeratologicalLenses.objects.filter(user=profile).exists():
+            for lenses in CustomizedOrthokeratologicalLenses.objects.filter(user=profile):
+                description += lenses.name.capitalize() + ', '
+            description = description[:-2]
+        else:
+            description += ' Нет'
+        # description += '<br/>'
+
+        pattern_point_properties['balloonContentBody'] = description
+        # pattern_point_properties['balloonContentFooter'] = f'Информация предоставлена:<br/>OOO "Ваша организация"'
+        pattern_point_properties['hintContent'] = f'{fio_html}'
+        point['properties'] = pattern_point_properties
+        result_end['features'].append(point)
+        i += 1
+    return Response(data=result_end, status=200)
+
+
 @api_view(['GET'])
 def get_coords_and_profile(request):
     coords = Coords.objects.all()

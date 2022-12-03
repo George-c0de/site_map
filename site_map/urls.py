@@ -3,6 +3,8 @@ from . import views
 from django.conf.urls.static import static
 from django.conf import settings
 
+from .views import get_site_coords
+
 urlpatterns = [
                   path('login', views.login_page, name='login'),
                   path('logout', views.logout_user, name='logout'),
@@ -14,5 +16,6 @@ urlpatterns = [
                   path('add_coords', views.add_coords, name='add_coords'),
                   path('add_coord', views.add_coord, name='add_coord'),
                   path('delete_coords', views.delete_coords),
-                  path('get_info', views.get_info_lk, name='get_info')
+                  path('get_info', views.get_info_lk, name='get_info'),
+                  path('get_coords', get_site_coords)
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

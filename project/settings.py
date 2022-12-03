@@ -21,8 +21,8 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 YANDEX_MAP = env('YANDEX_MAP')
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['*', ]
+CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
 
 INSTALLED_APPS = [
@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'site_map',
     'rest_framework',
+    "corsheaders",
 ]
 # AUTH_USER_MODEL = 'site_map.User'
 MIDDLEWARE = [
@@ -44,6 +45,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'project.urls'
